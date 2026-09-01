@@ -1,0 +1,12 @@
+# Python-ий орчин болон том багцууд
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# PyCharm-ийн тохиргооны хавтас
+.idea/
+
+# Хэрэв маш том CSV эсвэл ZIP файл байгаа бол
+*.zip
+.netlify/

@@ -1,0 +1,35 @@
+{
+  "packageId": "com.mongoliaguidemap.twa",
+  "host": "mongoliaguidemap.github.io",
+  "name": "Mongolia Travel Map",
+  "launcherName": "TravelMap",
+  "displayMode": "standalone",
+  "themeColor": "#1a73e8",
+  "navigationColor": "#ffffff",
+  "backgroundColor": "#ffffff",
+  "enableNotifications": false,
+  "startUrl": "/v_initial/index.html",
+  "iconUrl": "https://pwa-directory.appspot.com/images/pwa-lightning.png",
+  "maskableIconUrl": "https://pwa-directory.appspot.com/images/pwa-lightning.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "mungon-key"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://pwa-directory.appspot.com/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "launchers": []
+}
