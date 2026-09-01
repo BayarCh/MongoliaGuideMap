@@ -24,7 +24,7 @@ def search_facebook_link(camp_name):
 
 
 # --- ҮНДСЭН ФАЙЛ ДЭЭР АЖИЛЛАХ ---
-file_name = "Tourist_camps_multi.csv"
+file_name = "../Tourist_camps_multi.csv"
 
 if os.path.exists(file_name):
     print(f"📖 {file_name} файлыг уншиж байна...")

@@ -1,7 +1,7 @@
 import pandas as pd
 
 # 1. Хоёр файлаа унших
-tourist_df = pd.read_csv("Tourist_camps_multi.csv")
+tourist_df = pd.read_csv("../Tourist_camps_multi.csv")
 nature_df = pd.read_csv("Nature_His_multi.csv")
 
 # 2. Зөвхөн хэрэгцээт багануудыг авч нэгтгэх

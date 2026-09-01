@@ -1,0 +1,36 @@
+{
+  "name": "TravelMap.mn - Mongolia Travel Guide",
+  "short_name": "TravelMap",
+  "description": "Interactive travel guide map of Mongolia.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+ "background_color": "#ffffff",
+  "theme_color": "#1a73e8",
+  "icons": [
+    {
+      "src": "/logo192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo1200x630.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

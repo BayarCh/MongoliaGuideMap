@@ -5,7 +5,7 @@ import os
 
 # 1. Тохиргоо (Файлын замаа та өөрийнхөөрөө тааруулаарай)
 INPUT_FILE = r"Nature_His_multi.csv"
-OUTPUT_FILE = r"Nature_His_multi_translated.csv"
+OUTPUT_FILE = r"../Nature_His_multi_translated.csv"
 
 # Хэрэв өмнө нь хэсэгчлэн хийсэн файл байвал түүнийг үргэлжлүүлж уншина
 if os.path.exists(OUTPUT_FILE):
