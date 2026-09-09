@@ -1,37 +1,44 @@
+import os
 import pandas as pd
 
-# 1. Хоёр файлаа унших
-tourist_df = pd.read_csv("Tourist_camps_multi.csv")
-nature_df = pd.read_csv("Nature_His_multi_translated.csv")
+# Хоёр файлын нэрс
+files = ["Nature_His_multi_translated.csv", "Tourist_camps_multi.csv"]
 
-# 2. Зөвхөн хэрэгцээт багануудыг авч нэгтгэх
-combined_df = pd.concat([
-    tourist_df[['Point_type', 'Category']],
-    nature_df[['Point_type', 'Category']]
-], ignore_index=True)
+total_combined_count = 0
+all_dfs = []
 
-# 3. Ангиллын нэрсийн зураглал (Mapping)
-point_type_mapping = {
-    1: "Natural Wonders (Байгалийн үзэсгэлэнт газар)",
-    2: "Historical Sites (Түүхийн дурсгалт газар)",
-    3: "Religious Sites (Шашны дурсгалт газар)",
-    4: "Tourist_Camp (Жуулчны бааз)",
-    5: "Resort (Амралтын газар)",
-    6: "Spa_Resort (Рашаан/Саам сувилал)",
-    7: "Children_Summer_Camp (Хүүхдийн зуслан)",
-    8: "Airport (Нисэх буудал)",
-    9: "Railway_Station (Төмөр замын өртөө)",
-    10: "Border Crossing (Хилийн боомт)",
-    11: "Roadside_Diner (Замын гуанз)",
-    12: "Gas_Station (Шатахуун түгээх станц)"
-}
+for file_path in files:
+    print(f"\n========================================")
+    print(f"Файл: {file_path}")
+    print(f"========================================")
 
-# 4. Тоолох ба хэвлэх
-combined_df['Point_type_Name'] = combined_df['Point_type'].map(point_type_mapping)
-counts = combined_df['Point_type_Name'].value_counts().reindex(point_type_mapping.values(), fill_value=0)
+    if not os.path.exists(file_path):
+        print(f"Алдаа: {file_path} файл олдсонгүй!")
+        continue
 
-print("--- ЦЭГИЙН ТӨРӨЛ БҮРИЙН ТОО ---")
-for idx, (name, count) in enumerate(counts.items(), 1):
-    print(f"{idx}. {name}: {count}")
+    df = pd.read_csv(file_path)
+    all_dfs.append(df)
 
-print(f"\nНийт цэгийн тоо: {counts.sum()}")
+    # 'Category' багана байгаа эсэхийг шалгах
+    if "Category" not in df.columns:
+        print(f"Алдаа: '{file_path}' дотор 'Category' багана олдсонгүй!")
+        print("Баганууд:", df.columns.tolist())
+    else:
+        counts = df["Category"].value_counts()
+        print(counts)
+        print("-" * 40)
+        print(f"Энэ файлын нийт цэг: {len(df)}")
+        total_combined_count += len(df)
+
+# Хэрэв хоёулаа амжилттай олдсон бол нийт дүнг гаргах
+if all_dfs:
+    combined_df = pd.concat(all_dfs, ignore_index=True)
+    print(f"\n========================================")
+    print(f" БҮХ ФАЙЛЫН НИЙТ ДҮН")
+    print(f"========================================")
+    print(f"Нэгтгэсэн нийт цэгийн тоо: {len(combined_df)}")
+
+    # Хэрэв бүх файлын категоруудыг нийлүүлж нэгдсэн байдлаар тоолмоор байвал:
+    if "Category" in combined_df.columns:
+        print("\n--- Бүх категоруудын нийт нэгдсэн тоо ---")
+        print(combined_df["Category"].value_counts())
