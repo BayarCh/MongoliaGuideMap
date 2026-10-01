@@ -2,20 +2,20 @@ import os
 import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from google import generativeai as genai
+from google import genai
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-GEMINI_API_KEY = ""
+# API түлхүүрийг орчны хувьсагчаас (Environment Variable) уншина
+GEMINI_API_KEY = os.getenv("")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 def generate_ai_response(prompt):
-    # Одоогоор Google дээр идэвхтэй байгаа үндсэн ба Pro хувилбарууд
+    # Одоогоор идэвхтэй байгаа стандарт загварууд
     models_to_try = [
-        'gemini-3.8-flash',
-        'gemini-3.8-pro',
+        'gemini-2.5-flash',
         'gemini-2.5-pro'
     ]
 
@@ -35,7 +35,7 @@ def generate_ai_response(prompt):
                 print(f"[{model_name}] Алдаа: {err_str}")
 
                 if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                    return "API key-ийн өдрийн хязгаар (20 хүсэлт) дууссан байна."
+                    return "API key-ийн хязгаар дууссан байна. Түр хүлээнэ үү."
 
                 if ("503" in err_str or "UNAVAILABLE" in err_str) and attempt < 2:
                     time.sleep(2.0)
@@ -43,29 +43,21 @@ def generate_ai_response(prompt):
                 else:
                     break
 
-    return "Google AI сервер дээр одоогоор түр ачаалал хэт өндөр байна. Хэдэн минутын дараа дахин нэг асууна уу."
+    return "Google AI сервер дээр одоогоор түр ачаалал хэт өндөр байна. Хэдэн минутын дараа дахин туршина уу."
 
 
-@app.route('/chat', methods=['POST', 'OPTIONS'])
-def chat():
-    if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'}), 200
+@app.route('/generate', methods=['POST'])
+def generate():
+    data = request.get_json()
+    if not data or 'prompt' not in data:
+        return jsonify({'error': 'Prompt талбар олдсонгүй'}), 400
 
-    try:
-        data = request.get_json()
-        if not data or 'message' not in data:
-            return jsonify({'text': 'Асуулт хоосон байна.'}), 400
-
-        user_message = data['message']
-        system_prompt = f"Та бол TravelMap.mn вэб сайтын туслах AI гид юм. Асуулт: {user_message}"
-
-        ai_text = generate_ai_response(system_prompt)
-        return jsonify({'text': ai_text})
-
-    except Exception as e:
-        print("Server Error:", e)
-        return jsonify({'text': f"Серверийн алдаа: {str(e)}"}), 500
+    prompt = data['prompt']
+    ai_text = generate_ai_response(prompt)
+    return jsonify({'response': ai_text})
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Хэсэгчилсэн тест хийхэд
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
