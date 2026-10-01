@@ -236,27 +236,29 @@
             loadingDiv.id = "chat-loading-indicator";
             loadingDiv.className = "message bot-message";
             loadingDiv.style.fontStyle = "italic";
-            loadingDiv.style.color = "#6c757d";
-            loadingDiv.innerText = "🤖 AI аяллын гид хариулт бэлдэж байна...";
-            messagesDiv.appendChild(loadingDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+loadingDiv.style.color = "#6c757d";
+loadingDiv.innerText = "🤖 AI аяллын гид хариулт бэлдэж байна...";
+messagesDiv.appendChild(loadingDiv);
+messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000);
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-            try {
-                const response = await fetch('http://127.0.0.1:5000/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ message: message }),
-                    signal: controller.signal
-                });
+try {
+    // Render дээрх шинэ backend URL-ийг энд тавина
+    const response = await fetch('https://travelmap-api-mn.onrender.com/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        // Хэрэв app.py дээр 'prompt' гэж уншиж байгаа бол энд { prompt: message } болгоно
+        body: JSON.stringify({ prompt: message }),
+        signal: controller.signal
+    });
 
-                clearTimeout(timeoutId);
-                if (loadingDiv) loadingDiv.remove();
+    clearTimeout(timeoutId);
+    if (loadingDiv) loadingDiv.remove();
 
                 if (!response.ok) {
                     throw new Error(`HTTP алдаа! Статус: ${response.status}`);
