@@ -5,7 +5,7 @@ import google.generativeai as genai
 app = Flask(__name__)
 
 # Gemini API тохируулга
-genai.configure(api_key="AQ.Ab8RN6IMUqlxkbmIh3gukAxlw6B1aHqREqNPnvuhu-jp3fZtHA")
+genai.configure(api_key="")
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 # CSV Датаг санах ойд унших
