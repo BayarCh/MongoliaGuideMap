@@ -1,0 +1,3 @@
+mkdir .github
+mkdir .github/workflows
+notepad .github/workflows/add-data.yml

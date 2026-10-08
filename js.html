@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelMap.mn - AI Аяллын гид</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 1. Доод талын товчлуур */
+        #ai-chat-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 140px;
+            z-index: 9999;
+            background: linear-gradient(135deg, #007bff, #00c6ff);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-weight: bold;
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        #ai-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        /* 2. Нээгдэж хаагддаг чат цонх */
+        #ai-chat-box {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 120px;
+            width: 360px;
+            height: 520px;
+            z-index: 9999;
+            background: #f8f9fa;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid #ddd;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 3. Чатны толгой */
+        #chat-header {
+            background: #007bff;
+            color: white;
+            padding: 14px 18px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+        }
+        .close-btn {
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+            opacity: 0.8;
+        }
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        /* 4. Мессежүүд */
+        #widget-chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 85%;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 2px;
+        }
+        .bot-message {
+            background: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 2px;
+        }
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .card:hover {
+            background: #e2e6ea;
+            border-color: #007bff;
+        }
+
+        /* 5. Инпут хэсэг */
+        #chat-input-area {
+            display: flex;
+            padding: 12px;
+            background: white;
+            border-top: 1px solid #ddd;
+            gap: 6px;
+        }
+        #widget-user-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+            font-size: 13px;
+        }
+        #widget-user-input:focus {
+            border-color: #007bff;
+        }
+        #widget-send-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #widget-send-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Газрын зураг -->
+    <div id="map"></div>
+
+    <!-- AI CHAT WIDGET START -->
+    <button id="ai-chat-btn" onclick="toggleAIChat()">
+        🤖 AI Аяллын гид
+    </button>
+
+    <div id="ai-chat-box">
+        <div id="chat-header">
+            <span>TravelMap AI Аяллын Гид</span>
+            <span class="close-btn" onclick="toggleAIChat()">✕</span>
+        </div>
+
+        <div id="widget-chat-messages">
+            <div class="message bot-message">Сайн байна уу! Би <b>TravelMap.mn</b>-ийн аяллын AI туслах байна. 🧭
+
+Та зорчих аймаг эсвэл аяллын төлөвлөгөөний талаар асуугаарай.</div>
+        </div>
+
+        <div id="chat-input-area">
+            <input type="text" id="widget-user-input" placeholder="Аялах аймаг эсвэл асуултаа бичээрэй... (д.ж: Хөвсгөл)" onkeypress="handleWidgetKeyPress(event)">
+            <button id="widget-send-btn" onclick="sendWidgetMessage()">Илгээх</button>
+        </div>
+    </div>
+    <!-- AI CHAT WIDGET END -->
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Газрын зураг үүсгэх
+        var map = L.map('map').setView([46.8625, 103.8467], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var currentMarkers = [];
+        var currentRouteLayer = null;
+
+        // Чат цонхыг нээх/хаах
+        function toggleAIChat() {
+            var chatBox = document.getElementById("ai-chat-box");
+            if (chatBox.style.display === "none" || chatBox.style.display === "") {
+                chatBox.style.display = "flex";
+            } else {
+                chatBox.style.display = "none";
+            }
+        }
+
+        // Enter дарахад илгээх
+        function handleWidgetKeyPress(event) {
+            if (event.key === "Enter") {
+                sendWidgetMessage();
+            }
+        }
+
+        // Мэдээлэл илгээх
+        async function sendWidgetMessage() {
+            var inputField = document.getElementById("widget-user-input");
+            var message = inputField.value.trim();
+
+            if (message === "") return;
+
+            appendWidgetMessage(message, "user-message");
+            inputField.value = "";
+
+            var messagesDiv = document.getElementById("widget-chat-messages");
+
+            var loadingDiv = document.createElement("div");
+            loadingDiv.id = "chat-loading-indicator";
+            loadingDiv.className = "message bot-message";
+            loadingDiv.style.fontStyle = "italic";
+            loadingDiv.style.color = "#6c757d";
+            loadingDiv.innerText = "🤖 AI аяллын гид хариулт бэлдэж байна...";
+            messagesDiv.appendChild(loadingDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+            try {
+                // Flask сервер руу хандах
+const response = await fetch(
+    "http://127.0.0.1:5000/chat",
+    {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: message
+        })
+    }
+);
+
+const data = await response.json();
+
+console.log("DATA:", data);
+
+let textResponse =
+    data.response ||
+    data.error ||
+    "Хариулт ирсэнгүй";
+
+textResponse = textResponse
+    .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
+    .replace(/\n/g, "<br>");
+
+appendWidgetMessage(
+    textResponse,
+    "bot-message"
+);
+
+                if (data.locations && data.locations.length > 0) {
+                    renderLocations(data.locations);
+                }
+
+            } catch (error) {
+                clearTimeout(timeoutId);
+                if (loadingDiv) loadingDiv.remove();
+
+                console.error('Error:', error);
+
+                if (error.name === 'AbortError') {
+                    appendWidgetMessage("⏱️ AI-ийн хариулт бэлтгэх хугацаа хэтэрлээ. Дахин нэг удаа асууж үзнэ үү.", "bot-message");
+                } else {
+                    appendWidgetMessage("⚠️ Сервертэй холбогдоход алдаа гарлаа. Flask (Flask.py) асаалттай байгааг шалгана уу.", "bot-message");
+                }
+            }
+        }
+
+        // Мессеж нэмэх
+        function appendWidgetMessage(text, className) {
+            var messagesDiv = document.getElementById("widget-chat-messages");
+            var msgDiv = document.createElement("div");
+            msgDiv.className = "message " + className;
+            msgDiv.innerHTML = text;
+
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Газрын зураг дээр цэг ба маршрут зурах
+        async function renderLocations(locations) {
+            if (typeof currentMarkers !== 'undefined') {
+                currentMarkers.forEach(m => map.removeLayer(m));
+                currentMarkers = [];
+            } else {
+                window.currentMarkers = [];
+            }
+
+            if (typeof currentRouteLayer !== 'undefined' && currentRouteLayer) {
+                map.removeLayer(currentRouteLayer);
+            }
+
+            var messagesDiv = document.getElementById("widget-chat-messages");
+
+            locations.forEach((loc, index) => {
+                var point = [loc.lat, loc.lng];
+
+                var marker = L.marker(point).addTo(map)
+                    .bindPopup(`<b>${loc.name}</b><br>${loc.desc}`);
+                currentMarkers.push(marker);
+
+                var card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML = `<b>${index + 1}. ${loc.name}</b><br><small style="color:#555;">${loc.desc}</small>`;
+                card.onclick = function() {
+                    map.flyTo(point, 12);
+                    marker.openPopup();
+                };
+                messagesDiv.appendChild(card);
+            });
+
+            if (locations.length > 1) {
+                const coordsStr = locations.map(loc => `${loc.lng},${loc.lat}`).join(';');
+                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`;
+
+                try {
+                    const response = await fetch(osrmUrl);
+                    const routeData = await response.json();
+
+                    if (routeData.routes && routeData.routes.length > 0) {
+                        const routeCoords = routeData.routes[0].geometry.coordinates;
+                        const latLngs = routeCoords.map(coord => [coord[1], coord[0]]);
+
+                        currentRouteLayer = L.polyline(latLngs, {
+                            color: '#007bff',
+                            weight: 5,
+                            opacity: 0.8
+                        }).addTo(map);
+
+                        map.fitBounds(currentRouteLayer.getBounds(), { padding: [50, 50] });
+                    }
+                } catch (err) {
+                    console.error("OSRM Замын маршрут татахад алдаа гарлаа:", err);
+                }
+            } else if (locations.length === 1) {
+                map.flyTo([locations[0].lat, locations[0].lng], 10);
+            }
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>
