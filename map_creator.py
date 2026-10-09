@@ -747,8 +747,8 @@ ai_chat_widget_html = """
 <!-- AI CHAT WIDGET START -->
 <button id="ai-chat-btn" onclick="toggleAIChat()" style="
     position: fixed;
-    bottom: 20px;
-    right: 150px;
+    bottom: 50px;
+    right: 60px;
     z-index: 999999 !important;
     background: linear-gradient(135deg, #007bff, #00c6ff);
     color: white;
