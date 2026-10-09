@@ -6,56 +6,95 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
 
-# ===== 1. TRAVELMAP.MN-ИЙН ДАТА САГ УНШИХ =====
+# ===== CSV ДАТА УНШИХ =====
 try:
     nature_df = pd.read_csv("Nature_His_multi_translated.csv", encoding="utf-8")
     camp_df = pd.read_csv("Tourist_camps_multi.csv", encoding="utf-8")
-    print(f"Дата амжилттай уншигдлаа: Байгаль={len(nature_df)}, Бааз={len(camp_df)}")
+    print(
+        f"Дата ачааллаа: Байгаль={len(nature_df)} бичлэг, Бааз={len(camp_df)} бичлэг"
+    )
 except Exception as e:
     print(f"Дата файл уншихад алдаа гарлаа: {e}")
     nature_df = pd.DataFrame()
     camp_df = pd.DataFrame()
 
 
-def get_travelmap_context(aimag_name):
-    """Шууд Travelmap.mn-ийн CSV дата сангаас тухайн аймгийн газруудыг шүүж текстийн контекст болгоно"""
-    context_parts = []
+def get_places_by_aimag(aimag):
+    """Тухайн аймгийн CSV дээрх мэдээллийг ангилал бүрээр нь шүүж буцаана"""
+    output = []
 
-    # 1. Байгалийн болон түүхэн газрууд шүүх
+    # 1. БАЙГАЛИЙН БОЛОН ТҮҮХЭН ДУРСГАЛТ ГАЗРУУД
     if not nature_df.empty and "Aimag_name_mon" in nature_df.columns:
-        nature_match = nature_df[
+        nature = nature_df[
             nature_df["Aimag_name_mon"]
             .astype(str)
-            .str.contains(aimag_name, na=False)
+            .str.strip()
+            .str.contains(aimag, na=False)
         ]
-        if not nature_match.empty:
-            cat_col = (
-                "Category" if "Category" in nature_match.columns else "Category_mon"
+        if not nature.empty:
+            output.append(
+                f"=== 🏔️ {aimag} аймгийн Байгаль, түүхийн дурсгалт газрууд (Нийт {len(nature)}) ==="
             )
-            context_parts.append(f"=== {aimag_name} аймгийн байгаль, түүхийн дурсгалт газрууд (Travelmap.mn) ===")
-            for _, row in nature_match.head(15).iterrows():
-                name = row.get("Name_mon", "Нэргүй")
-                cat = row.get(cat_col, "Дурсгалт газар")
-                context_parts.append(f"• {name} ({cat})")
+            cat_col = (
+                "Category_mon"
+                if "Category_mon" in nature.columns
+                else "Category"
+            )
+            sum_col = "Sum_mon" if "Sum_mon" in nature.columns else "Sum"
 
-    # 2. Жуулчны бааз, амралтын газрууд шүүх
+            grouped = nature.groupby(cat_col)
+            for category, group in grouped:
+                output.append(f"\n📍 **{category} ({len(group)}):**")
+                for _, row in group.iterrows():
+                    name = row.get("Name_mon", "Нэргүй")
+                    sum_name = (
+                        f" - {row.get(sum_col)} сум"
+                        if sum_col in row and pd.notna(row.get(sum_col))
+                        else ""
+                    )
+                    output.append(f"  • {name}{sum_name}")
+
+    # 2. ЖУУЛЧНЫ БААЗ, ҮЙЛЧИЛГЭЭНИЙ ГАЗРУУД
     if not camp_df.empty and "Aimag_name_mon" in camp_df.columns:
-        camp_match = camp_df[
+        camps = camp_df[
             camp_df["Aimag_name_mon"]
             .astype(str)
-            .str.contains(aimag_name, na=False)
+            .str.strip()
+            .str.contains(aimag, na=False)
         ]
-        if not camp_match.empty:
-            context_parts.append(f"\n=== {aimag_name} аймгийн жуулчны бааз, амралтын газрууд (Travelmap.mn) ===")
-            for _, row in camp_match.head(10).iterrows():
-                name = row.get("Name_mon", "Нэргүй")
-                cat = row.get("Category", "Амралтын газар")
-                context_parts.append(f"• {name} ({cat})")
+        if not camps.empty:
+            output.append(
+                f"\n=== 🏕️ {aimag} аймгийн Жуулчны бааз, үйлчилгээний газрууд (Нийт {len(camps)}) ==="
+            )
+            camp_cat = (
+                "Category_mon" if "Category_mon" in camps.columns else "Category"
+            )
+            sum_col = "Sum_mon" if "Sum_mon" in camps.columns else "Sum"
 
-    return "\n".join(context_parts)
+            grouped_camps = camps.groupby(camp_cat)
+            for category, group in grouped_camps:
+                output.append(f"\n🏢 **{category} ({len(group)}):**")
+                for _, row in group.iterrows():
+                    name = row.get("Name_mon", "Нэргүй")
+                    sum_name = (
+                        f" - {row.get(sum_col)} сум"
+                        if sum_col in row and pd.notna(row.get(sum_col))
+                        else ""
+                    )
+                    output.append(f"  • {name}{sum_name}")
+
+    if not output:
+        return f"{aimag} аймаг дээр одоогоор мэдээлэл олдсонгүй."
+
+    return "\n".join(output)
 
 
-# ===== 2. FLASK СЕРВЕР =====
+# ===== ТӨВ АЙМГИЙН ТУРШИЛТ (Терминал дээр асахдаа шууд хэвлэнэ) =====
+print("\n===== ТӨВ АЙМГИЙН ДАТА ТУРШИЛТ =====")
+print(get_places_by_aimag("Төв"))
+print("====================================\n")
+
+# ===== FLASK СЕРВЕР =====
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -63,14 +102,12 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 
 def generate_ai_response(user_query, travelmap_data=""):
-    """Wikipedia ашиглахгүй, зөвхөн Travelmap.mn-ийн өгөгдөл дээр үндэслэн хариулах систем заавар"""
     if not GEMINI_API_KEY:
-        return "GEMINI_API_KEY тохируулаагүй байна."
+        return "API Key тохируулаагүй байна."
 
     system_prompt = (
         "Та бол зөвхөн Travelmap.mn платформын өгөгдөлд үндэслэн хариулдаг AI Аяллын Гид юм.\n"
-        "Цэвэр гадны эх сурвалж эсвэл Wikipedia-ийн хамааралгүй мэдээллээр биш, "
-        "доор өгөгдсөн Travelmap.mn-ийн дата сангийн мэдээлэлд тугуурлан аялагчид эелдэг, цэгцтэй зөвлөгөө өгнө үү.\n\n"
+        "Доор өгөгдсөн Travelmap.mn-ийн дата сангийн мэдээлэлд тугуурлан аялагчид эелдэг, цэгцтэй зөвлөгөө өгнө үү.\n\n"
     )
 
     if travelmap_data:
@@ -78,12 +115,8 @@ def generate_ai_response(user_query, travelmap_data=""):
     else:
         full_prompt = f"{system_prompt}ХЭРЭГЛЭГЧИЙН АСУУЛТ: {user_query}"
 
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-    headers = {
-        "x-goog-api-key": GEMINI_API_KEY,
-        "Content-Type": "application/json",
-    }
-
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    headers = {"Content-Type": "application/json"}
     payload = {"contents": [{"parts": [{"text": full_prompt}]}]}
 
     try:
@@ -91,7 +124,6 @@ def generate_ai_response(user_query, travelmap_data=""):
         req = urllib.request.Request(
             url, data=data, headers=headers, method="POST"
         )
-
         with urllib.request.urlopen(req) as response:
             res = json.loads(response.read().decode("utf-8"))
             candidates = res.get("candidates", [])
@@ -99,17 +131,12 @@ def generate_ai_response(user_query, travelmap_data=""):
                 parts = candidates[0].get("content", {}).get("parts", [])
                 if parts:
                     return parts[0].get("text", "").strip()
-
     except Exception as e:
-        err_str = str(e)
-        print(f"AI хүсэлтэд алдаа гарлаа: {err_str}")
-        if "429" in err_str:
-            return "API key-ийн хязгаар дууссан байна. Түр хүлээнэ үү."
+        return f"AI Холболтын алдаа: {e}"
 
-    return "Google AI сервер дээр одоогоор түр ачаалал хэт өндөр байна."
+    return "Хариу ирсэнгүй."
 
 
-# ===== 3. ROUTE ТОХИРУУЛГА =====
 @app.route("/generate", methods=["POST", "OPTIONS"])
 @app.route("/chat", methods=["POST", "OPTIONS"])
 def generate():
@@ -117,17 +144,36 @@ def generate():
         return "", 200
 
     data = request.get_json() or {}
-    user_message = data.get("prompt") or data.get("message")
+    user_message = data.get("prompt") or data.get("message", "")
+
+    print(f"\n[ИРСЭН АСУУЛТ]: {user_message}")
 
     if not user_message:
-        return jsonify({"error": "Prompt эсвэл message талбар олдсонгүй"}), 400
+        return jsonify({"error": "Асуулт хоосон байна"}), 400
 
-    # Монгол орны 21 аймаг + Улаанбаатар
     aimags = [
-        "Архангай", "Баян-Өлгий", "Баянхонгор", "Булган", "Говь-Алтай",
-        "Говьсүмбэр", "Дархан-Уул", "Дорноговь", "Дорнод", "Дундговь",
-        "Завхан", "Орхон", "Сэлэнгэ", "Сүхбаатар", "Төв", "Увс",
-        "Улаанбаатар", "Ховд", "Хэнтий", "Хөвсгөл", "Өвөрхангай", "Өмнөговь"
+        "Архангай",
+        "Баян-Өлгий",
+        "Баянхонгор",
+        "Булган",
+        "Говь-Алтай",
+        "Говьсүмбэр",
+        "Дархан-Уул",
+        "Дорноговь",
+        "Дорнод",
+        "Дундговь",
+        "Завхан",
+        "Орхон",
+        "Сэлэнгэ",
+        "Сүхбаатар",
+        "Төв",
+        "Увс",
+        "Улаанбаатар",
+        "Ховд",
+        "Хэнтий",
+        "Хөвсгөл",
+        "Өвөрхангай",
+        "Өмнөговь",
     ]
 
     matched_aimag = None
@@ -136,13 +182,15 @@ def generate():
             matched_aimag = aimag
             break
 
-    # Хэрэв аль нэг аймаг асуусан байвал CSV сангаас датагаа шүүж AI-д өгнө
     if matched_aimag:
-        travelmap_context = get_travelmap_context(matched_aimag)
-        ai_text = generate_ai_response(user_message, travelmap_context)
-    else:
-        ai_text = generate_ai_response(user_message)
+        print(f"[ШҮҮСЭН АЙМАГ]: {matched_aimag}")
+        db_places = get_places_by_aimag(matched_aimag)
+        print(
+            f"[ТЕРМИНАЛД ХЭВЛЭСЭН ДАТА]:\n{db_places[:300]}...\n"
+        )  # Эхний 300 тэмдэгтийг терминалд харуулна
+        return jsonify({"response": db_places, "reply": db_places})
 
+    ai_text = generate_ai_response(user_message)
     return jsonify({"response": ai_text, "reply": ai_text})
 
 
