@@ -849,15 +849,21 @@ async function sendWidgetMessage() {
 ai_chat_widget_html = """
 <!-- AI CHAT WIDGET START -->
 <style>
-    /* Гар утасны дэлгэц дээрх тохиргоо */
+    /* Гар утасны дэлгэц дээрх чат болон товчлууруудын тохиргоо */
     @media (max-width: 768px) {
         #chat-widget {
-            width: 90% !important;
-            max-width: 350px !important;
-            left: 5% !important;
-            bottom: 70px !important;
-            height: 70vh !important;
+            width: 95% !important;
+            max-width: 100% !important;
+            left: 2.5% !important;
+            right: 2.5% !important;
+            bottom: 60px !important;
+            height: 75vh !important;
             z-index: 99999 !important;
+        }
+
+        /* 6 хэлний товч болон сошиал товчлууруудыг дээш татах */
+        .leaflet-bottom.leaflet-right {
+            bottom: 120px !important;
         }
     }
 </style>
