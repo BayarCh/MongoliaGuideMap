@@ -740,10 +740,32 @@ m.get_root().html.add_child(folium.Element(ultimate_multilang_engine))
 # 11. AI CHAT WIDGET БОЛОН АЯЛЛЫН ГИД (ШИНЭЧИЛСЭН КОД)
 ai_chat_widget_html = """
 <!-- AI CHAT WIDGET START -->
+<style>
+    /* Гар утасны дэлгэц дээрх чат болон товчлууруудын тохиргоо */
+    @media (max-width: 768px) {
+        #ai-chat-box {
+            width: 95% !important;
+            max-width: 100% !important;
+            left: 2.5% !important;
+            right: 2.5% !important;
+            bottom: 60px !important;
+            height: 75vh !important;
+            z-index: 99999 !important;
+        }
+        .leaflet-bottom.leaflet-right {
+            bottom: 200px !important;
+        }
+    }
+    .leaflet-bottom.leaflet-right {
+        bottom: 80px !important;
+    }
+</style>
+
+<!-- AI Товчлуур -->
 <button id="ai-chat-btn" onclick="toggleAIChat()" style="
     position: fixed;
-    bottom: 50px;
-    right: 60px;
+    bottom: 15px;
+    right: 20px;
     z-index: 999999 !important;
     background: linear-gradient(135deg, #007bff, #00c6ff);
     color: white;
@@ -759,6 +781,8 @@ ai_chat_widget_html = """
     gap: 8px;">
     🤖 AI Аяллын гид
 </button>
+
+<!-- AI Чат цонх -->
 <div id="ai-chat-box" style="display: none; position: fixed; bottom: 75px; right: 120px; width: 360px; height: 520px; z-index: 999999 !important; background: rgb(248, 249, 250); border-radius: 16px; box-shadow: rgba(0, 0, 0, 0.3) 0px 10px 30px; border: 1px solid rgb(221, 221, 221); flex-direction: column; overflow: hidden;">
     <div style="background: #007bff; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold;">
         <span>TravelMap AI Аяллын Гид</span>
@@ -814,7 +838,7 @@ async function sendWidgetMessage() {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
     try {
-        const response = await fetch('http://127.0.0.1:5000/chat', {
+        const response = await fetch('https://mongoliaguidemap-1.onrender.com/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: message })
@@ -839,53 +863,6 @@ async function sendWidgetMessage() {
 }
 </script>
 <!-- AI CHAT WIDGET END -->
-"""
-ai_chat_widget_html = """
-<!-- AI CHAT WIDGET START -->
-<style>
-    /* Гар утасны дэлгэц дээрх чат болон товчлууруудын тохиргоо */
-    @media (max-width: 768px) {
-        #chat-widget {
-            width: 95% !important;
-            max-width: 100% !important;
-            left: 2.5% !important;
-            right: 2.5% !important;
-            bottom: 60px !important;
-            height: 75vh !important;
-            z-index: 99999 !important;
-        }
-
-        /* Гар утсан дээр сошиал товчлууруудыг илүү дээш нь татах (200px болгож өндөрсгөв) */
-        .leaflet-bottom.leaflet-right {
-            bottom: 200px !important;
-        }
-    }
-
-    /* Үндсэн дэлгэц дээр сошиал товчлууруудыг дээшлүүлэх */
-    .leaflet-bottom.leaflet-right {
-        bottom: 80px !important;
-    }
-</style>
-
-<button id="ai-chat-btn" onclick="toggleAIChat()" style="
-    position: fixed;
-    bottom: 15px;
-    right: 20px;
-    z-index: 999999 !important;
-    background: linear-gradient(135deg, #007bff, #00c6ff);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    padding: 10px 18px;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    font-weight: bold;
-    font-family: Arial, sans-serif;
-    display: flex;
-    align-items: center;
-    gap: 8px;">
-    🤖 AI Аяллын гид
-</button>
 """
 
 m.get_root().html.add_child(folium.Element(ai_chat_widget_html))
