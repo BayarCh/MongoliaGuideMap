@@ -863,7 +863,7 @@ ai_chat_widget_html = """
 
     /* Үндсэн дэлгэц дээр сошиал товчлууруудыг дээшлүүлэх */
     .leaflet-bottom.leaflet-right {
-        bottom: 150px !important;
+        bottom: 100px !important;
     }
 </style>
 
