@@ -356,7 +356,7 @@ m.get_root().html.add_child(folium.Element(click_js))
 
 # 9. СОШИАЛ TOBЧНУУД, QR БОЛОН ЭЦСИЙН CSS ЗАГВАРУУД
 final_combined_controls = """
-<div id="right-panel-controls" style="position: fixed; bottom: 100px; right: 20px; z-index: 999999 !important; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+<div id="right-panel-controls" style="position: fixed; bottom: 60px; right: 20px; z-index: 999999 !important; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
 
     <a href="https://www.facebook.com/sharer/sharer.php?u=https://travelmap.mn" target="_blank" 
        style="background: #1877F2; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
@@ -863,13 +863,13 @@ ai_chat_widget_html = """
 
     /* Үндсэн дэлгэц дээр сошиал товчлууруудыг дээшлүүлэх */
     .leaflet-bottom.leaflet-right {
-        bottom: 100px !important;
+        bottom: 80px !important;
     }
 </style>
 
 <button id="ai-chat-btn" onclick="toggleAIChat()" style="
     position: fixed;
-    bottom: 30px;
+    bottom: 15px;
     right: 20px;
     z-index: 999999 !important;
     background: linear-gradient(135deg, #007bff, #00c6ff);
