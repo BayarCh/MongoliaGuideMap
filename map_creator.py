@@ -356,7 +356,7 @@ m.get_root().html.add_child(folium.Element(click_js))
 
 # 9. СОШИАЛ TOBЧНУУД, QR БОЛОН ЭЦСИЙН CSS ЗАГВАРУУД
 final_combined_controls = """
-<div id="right-panel-controls" style="position: fixed; bottom: 20px; right: 20px; z-index: 999999 !important; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+<div id="right-panel-controls" style="position: fixed; bottom: 100px; right: 20px; z-index: 999999 !important; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
 
     <a href="https://www.facebook.com/sharer/sharer.php?u=https://travelmap.mn" target="_blank" 
        style="background: #1877F2; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
@@ -381,11 +381,6 @@ final_combined_controls = """
     <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://travelmap.mn" target="_blank" 
        style="background: #0077b5; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
        <i class="fa-brands fa-linkedin-in"></i>
-    </a>
-
-    <a href="https://github.com/BayarCh/MongoliaGuideMap" target="_blank" 
-       style="background: #333; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
-       <i class="fa-brands fa-github"></i>
     </a>
 
     <div class="visitor-stats" style="margin-top: 5px; background: white; padding: 2px; border-radius: 4px; box-shadow: 0px 2px 8px rgba(0,0,0,0.2);">
@@ -764,7 +759,6 @@ ai_chat_widget_html = """
     gap: 8px;">
     🤖 AI Аяллын гид
 </button>
-
 <div id="ai-chat-box" style="display: none; position: fixed; bottom: 75px; right: 120px; width: 360px; height: 520px; z-index: 999999 !important; background: rgb(248, 249, 250); border-radius: 16px; box-shadow: rgba(0, 0, 0, 0.3) 0px 10px 30px; border: 1px solid rgb(221, 221, 221); flex-direction: column; overflow: hidden;">
     <div style="background: #007bff; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold;">
         <span>TravelMap AI Аяллын Гид</span>
@@ -861,17 +855,22 @@ ai_chat_widget_html = """
             z-index: 99999 !important;
         }
 
-        /* 6 хэлний товч болон сошиал товчлууруудыг дээш татах */
+        /* Гар утсан дээр сошиал товчлууруудыг илүү дээш нь татах (200px болгож өндөрсгөв) */
         .leaflet-bottom.leaflet-right {
-            bottom: 120px !important;
+            bottom: 200px !important;
         }
+    }
+
+    /* Үндсэн дэлгэц дээр сошиал товчлууруудыг дээшлүүлэх */
+    .leaflet-bottom.leaflet-right {
+        bottom: 150px !important;
     }
 </style>
 
 <button id="ai-chat-btn" onclick="toggleAIChat()" style="
     position: fixed;
-    bottom: 50px;
-    right: 60px;
+    bottom: 30px;
+    right: 20px;
     z-index: 999999 !important;
     background: linear-gradient(135deg, #007bff, #00c6ff);
     color: white;
