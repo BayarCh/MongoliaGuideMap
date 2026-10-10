@@ -819,12 +819,12 @@ async function sendWidgetMessage() {
     messagesDiv.appendChild(loadingDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-try {
-    const response = await fetch('https://mongoliaguidemap-1.onrender.com/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: message })
-    }); 
+    try {
+        const response = await fetch('http://127.0.0.1:5000/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message })
+        });
 
         if (loadingDiv) loadingDiv.remove();
 
@@ -846,6 +846,42 @@ try {
 </script>
 <!-- AI CHAT WIDGET END -->
 """
+ai_chat_widget_html = """
+<!-- AI CHAT WIDGET START -->
+<style>
+    /* Гар утасны дэлгэц дээрх тохиргоо */
+    @media (max-width: 768px) {
+        #chat-widget {
+            width: 90% !important;
+            max-width: 350px !important;
+            left: 5% !important;
+            bottom: 70px !important;
+            height: 70vh !important;
+            z-index: 99999 !important;
+        }
+    }
+</style>
+
+<button id="ai-chat-btn" onclick="toggleAIChat()" style="
+    position: fixed;
+    bottom: 50px;
+    right: 60px;
+    z-index: 999999 !important;
+    background: linear-gradient(135deg, #007bff, #00c6ff);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;">
+    🤖 AI Аяллын гид
+</button>
+"""
 
 m.get_root().html.add_child(folium.Element(ai_chat_widget_html))
 
@@ -853,5 +889,3 @@ m.get_root().html.add_child(folium.Element(ai_chat_widget_html))
 output_html_path = os.path.join(current_dir, "index.html")
 m.save(output_html_path)
 print("Газрын зураг болон AI чатботыг амжилттай index.html файлд хадгаллаа!")
-
-
