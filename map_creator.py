@@ -737,7 +737,7 @@ function updatePopupLanguage() {
 ultimate_multilang_engine = js_styles + js_html + js_script
 m.get_root().html.add_child(folium.Element(ultimate_multilang_engine))
 
-# 11. AI CHAT WIDGET БОЛОН АЯЛЛЫН ГИД (ШИНЭЧИЛСЭН КОД)
+# 11. AI  WIDGET БОЛОН АЯЛЛЫН ГИД (ШИНЭЧИЛСЭН КОД)
 ai_chat_widget_html = """
 <!-- AI CHAT WIDGET START -->
 <style>
@@ -746,8 +746,8 @@ ai_chat_widget_html = """
         #ai-chat-box {
             width: 95% !important;
             max-width: 100% !important;
-            left: 2.5% !important;
-            right: 2.5% !important;
+            left: 2.5%!important;
+            right: 2.5px !important;
             bottom: 60px !important;
             height: 75vh !important;
             z-index: 99999 !important;
