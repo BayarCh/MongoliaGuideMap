@@ -746,8 +746,8 @@ ai_chat_widget_html = """
         #ai-chat-box {
             width: 95% !important;
             max-width: 100% !important;
-            left: 2.5%!important;
-            right: 2.5px !important;
+            left: 2.5% !important;
+            right: 2.5% !important;
             bottom: 60px !important;
             height: 75vh !important;
             z-index: 99999 !important;
