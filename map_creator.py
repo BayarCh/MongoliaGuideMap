@@ -744,10 +744,10 @@ ai_chat_widget_html = """
     /* Гар утасны дэлгэц дээрх чат болон товчлууруудын тохиргоо */
     @media (max-width: 768px) {
         #ai-chat-box {
-            width: 80% !important;
-            max-width: 80% !important;
-            left: auto !important;
-            right: 10px !important;
+            width: 95% !important;
+            max-width: 100% !important;
+            left: 2.5%!important;
+            right: 2.5px !important;
             bottom: 60px !important;
             height: 75vh !important;
             z-index: 99999 !important;
