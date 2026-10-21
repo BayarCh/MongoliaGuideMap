@@ -54,7 +54,7 @@ try:
 
   folium.GeoJson(
       aimag_data,
-      name='1. Аймгийн хил',
+      name='1. Aimag Boundaries',
       style_function=lambda x: {
           'fillColor': 'transparent',
           'color': '#d9534f',  # Улаан хүрээ
@@ -95,7 +95,7 @@ try:
 
   folium.GeoJson(
       sum_data,
-      name='2. Сумын хил',
+      name='2. Soum Boundaries',
       style_function=lambda x: {
           'fillColor': 'transparent',
           'color': '#0275d8',  # Цэнхэр хүрээ
@@ -665,28 +665,27 @@ js_styles = """
 
 js_html = """
 <div class="lang-switcher-panel" id="langPanel">
-    <button class="lang-btn active" data-lang="mn" onclick="switchLanguage('mn')">MN</button>
-    <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
-    <button class="lang-btn" data-lang="kr" onclick="switchLanguage('kr')">KR</button>
-    <button class="lang-btn" data-lang="jp" onclick="switchLanguage('jp')">JP</button>
-    <button class="lang-btn" data-lang="cn" onclick="switchLanguage('cn')">CN</button>
-    <button class="lang-btn" data-lang="ru" onclick="switchLanguage('ru')">RU</button>
+    <button class="lang-btn active" data-lang="mn" onclick="window.switchLanguage('mn')">MN</button>
+    <button class="lang-btn" data-lang="en" onclick="window.switchLanguage('en')">EN</button>
+    <button class="lang-btn" data-lang="kr" onclick="window.switchLanguage('kr')">KR</button>
+    <button class="lang-btn" data-lang="jp" onclick="window.switchLanguage('jp')">JP</button>
+    <button class="lang-btn" data-lang="cn" onclick="window.switchLanguage('cn')">CN</button>
+    <button class="lang-btn" data-lang="ru" onclick="window.switchLanguage('ru')">RU</button>
 </div>
 """
 
 js_script = """
 <script>
 var currentLang = 'mn';
-var searchControl = null;
 var mapObject = null;
-var globalClusterGroups = [];
 
 var dictControlLayers = {
+    "1. Aimag Boundaries": { "mn": "1. Аймгийн хил", "en": "1. Aimag Boundaries", "kr": "1. 아이막 경계", "jp": "1. アイマグ境界", "cn": "1. 省级行政边界", "ru": "1. Границы аймаков" },
+    "2. Soum Boundaries": { "mn": "2. Сумын хил", "en": "2. Soum Boundaries", "kr": "2. 숨 경계", "jp": "2. スム境界", "cn": "2. 县级行政边界", "ru": "2. Границы сомонов" },
     "Street Map": { "mn": "🌐 Гудамжны зураг", "en": "🌐 Street Map", "kr": "🌐 거리 지도", "jp": "🌐 街路地図", "cn": "🌐 街道地图", "ru": "🌐 Карта улиц" },
     "Satellite": { "mn": "🛰️ Хиймэл дагуул", "en": "🛰️ Satellite", "kr": "🛰️ 위성 지도", "jp": "🛰️ 卫星地图", "cn": "🛰️ 卫星地图", "ru": "🛰️ Спутник" },
     "Terrain Map": { "mn": "⛰️ Гадаргуун зураг", "en": "⛰️ Terrain Map", "kr": "⛰️ 지형 지도", "jp": "⛰️ 地形図", "cn": "⛰️ 地形图", "ru": "⛰️ Карта рельефа" },
     "OpenTopoMap": { "mn": "⛰️ OpenTopoMap", "en": "⛰️ Topo Map", "kr": "⛰️ 등고선 지도", "jp": "⛰️ 地形図", "cn": "⛰️ 地形图", "ru": "⛰️ Топокарта" },
-
     "Natural Wonders": { "mn": "🏞️ Байгалийн үзэсгэлэн", "en": "Natural Wonders", "kr": "🏞️ 자연 경관", "jp": "🏞️ 自然の景观", "cn": "🏞️ 自然奇观", "ru": "🏞️ Чудеса природы" },
     "Historical Sites": { "mn": "🏛️ Түүхэн дурсгал", "en": "Historical Sites", "kr": "🏛️ 역사 유적지", "jp": "🏛️ 歴史遺跡", "cn": "🏛️ 历史古迹", "ru": "🏛️ Исторические места" },
     "Religious Sites": { "mn": "🕉️ Сүм хийд, шашин", "en": "Religious Sites", "kr": "🕉️ 종교 사원", "jp": "🕉️ 宗教寺院", "cn": "🕉️ 宗教圣地", "ru": "🕉️ Религиозные места" },
@@ -698,56 +697,8 @@ var dictControlLayers = {
     "Transport": { "mn": "✈️ Тээвэр, ложистик", "en": "Transport", "kr": "✈️ 교통 / 物流", "jp": "✈️ 交通 / 物流", "cn": "✈️ 交通 / 物流", "ru": "✈️ Транспорт" }
 };
 
-document.addEventListener("DOMContentLoaded", function() {
-    function initMultilangEngine() {
-        for (var key in window) {
-            if (key.startsWith('map_') && window[key] instanceof L.Map) { mapObject = window[key]; }
-            if (window[key] instanceof L.MarkerClusterGroup) { globalClusterGroups.push(window[key]); }
-        }
-
-        if (mapObject) {
-            mapObject.eachLayer(function(layer) {
-                if (layer instanceof L.Control.Search && layer !== searchControl) {
-                    mapObject.removeControl(layer);
-                }
-            });
-
-            var badControls = document.querySelectorAll('.leaflet-control-search');
-            if (badControls.length > 1) {
-                for (var i = 1; i < badControls.length; i++) { badControls[i].remove(); }
-            }
-
-            mapObject.on('popupopen', function(e) { updatePopupLanguage(); });
-            saveOriginalLabels();
-        } else {
-            setTimeout(initMultilangEngine, 300);
-        }
-    }
-    initMultilangEngine();
-});
-
-function saveOriginalLabels() {
-    var labels = document.querySelectorAll('.leaflet-control-layers label');
-    if (labels.length > 0) {
-        labels.forEach(function(label) {
-            if (!label.getAttribute('data-raw-text')) {
-                var txt = "";
-                label.childNodes.forEach(function(node) {
-                    if (node.nodeType === 3) txt += node.textContent;
-                    else if (node.tagName === 'SPAN' && !node.querySelector('input')) txt += node.textContent;
-                });
-                if (!txt.trim() || !txt.includes('|')) { txt = label.innerText || ""; }
-                txt = txt.trim();
-                if (txt) { label.setAttribute('data-raw-text', txt); }
-            }
-        });
-        refreshSearchAndLabels();
-    } else {
-        setTimeout(saveOriginalLabels, 150);
-    }
-}
-
-function switchLanguage(lang) {
+// Глобал функц болгож зарлах
+window.switchLanguage = function(lang) {
     currentLang = lang;
     document.querySelectorAll('.lang-btn').forEach(btn => {
         if(btn.getAttribute('data-lang') === lang) { btn.classList.add('active'); } 
@@ -760,35 +711,33 @@ function switchLanguage(lang) {
 
     refreshSearchAndLabels();
     updatePopupLanguage();
-}
-
+};
 function refreshSearchAndLabels() {
     document.querySelectorAll('.leaflet-control-layers label').forEach(function(label) {
         var rawText = label.getAttribute('data-raw-text');
+        
+        // Хэрэв data-raw-text байхгүй бол шууд текстээс нь авах
+        if (!rawText) {
+            rawText = label.innerText.trim();
+            if (rawText) { label.setAttribute('data-raw-text', rawText); }
+        }
+
         if (rawText) {
             var targetText = rawText;
-            if (rawText.includes('|')) {
-                var parts = rawText.split('|');
-                var mnPart = parts[0].trim();
-                var enPart = parts[1].trim();
-                var cleanEnKey = enPart.replace(/[^a-zA-Z ]/g, "").trim(); 
+            
+            // Текстийг цэвэрлэж харьцуулах түлхүүр үг гаргах
+            var cleanKey = rawText.replace(/[^a-zA-Z0-9 .]/g, "").trim();
+            
+            // dictControlLayers дотроос яг тохирох түлхүүрийг хайх
+            var matchedKey = Object.keys(dictControlLayers).find(function(k) {
+                return k.toLowerCase() === cleanKey.toLowerCase() || cleanKey.toLowerCase().includes(k.toLowerCase());
+            });
 
-                if (currentLang === 'mn') {
-                    targetText = mnPart;
-                } else {
-                    var matchedKey = Object.keys(dictControlLayers).find(function(k) {
-                        return k.replace(/[^a-zA-Z ]/g, "").toLowerCase() === cleanEnKey.toLowerCase();
-                    });
-                    targetText = (matchedKey && dictControlLayers[matchedKey][currentLang]) ? dictControlLayers[matchedKey][currentLang] : enPart;
-                }
-            } else {
-                var cleanKey = rawText.replace(/[^a-zA-Z ]/g, "").trim();
-                var matchedKey = Object.keys(dictControlLayers).find(function(k) {
-                    return k.replace(/[^a-zA-Z ]/g, "").toLowerCase() === cleanKey.toLowerCase();
-                });
-                if (matchedKey && dictControlLayers[matchedKey][currentLang]) { targetText = dictControlLayers[matchedKey][currentLang]; }
+            if (matchedKey && dictControlLayers[matchedKey][currentLang]) { 
+                targetText = dictControlLayers[matchedKey][currentLang]; 
             }
 
+            // Шошгоны текстийг шинэчлэх
             var textReplaced = false;
             for (var i = 0; i < label.childNodes.length; i++) {
                 var node = label.childNodes[i];
@@ -805,7 +754,6 @@ function refreshSearchAndLabels() {
         }
     });
 }
-
 function updatePopupLanguage() {
     document.querySelectorAll('.pop-lang').forEach(function(div) {
         if (div.classList.contains('lang-' + currentLang)) {
@@ -815,6 +763,17 @@ function updatePopupLanguage() {
         }
     });
 }
+
+// Анх ачаалагдах үед шошгыг хадгалах
+setTimeout(function() {
+    var labels = document.querySelectorAll('.leaflet-control-layers label');
+    labels.forEach(function(label) {
+        if (!label.getAttribute('data-raw-text')) {
+            var txt = label.innerText.trim();
+            if (txt) { label.setAttribute('data-raw-text', txt); }
+        }
+    });
+}, 500);
 </script>
 """
 
@@ -950,6 +909,24 @@ async function sendWidgetMessage() {
 """
 
 m.get_root().html.add_child(folium.Element(ai_chat_widget_html))
+import folium
+from jinja2 import Template
+
+# 10. ОЛОН ХЭЛНИЙ СКРИПТИЙГ ГАЗРЫН ЗУРГИЙН ТОЛГОЙД ОРУУЛАХ
+multilang_code = f"""
+<style>
+{js_styles}
+</style>
+
+{js_html}
+
+<script>
+{js_script}
+</script>
+"""
+
+# Шууд газрын зураг рүү HTML элемент болгон нэмэх
+m.get_root().html.add_child(folium.Element(multilang_code))
 
 # 12. ГАЗРЫН ЗУРГИЙГ INDEX.HTML ФАЙЛД ХАДГАЛАХ
 output_html_path = os.path.join(current_dir, "index.html")
