@@ -40,6 +40,90 @@ folium.TileLayer(tiles='https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', att
     m)
 folium.TileLayer(tiles='https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', attr='Google',
                  name='⛰️ Terrain Map').add_to(m)
+import json
+import folium
+
+# ==============================================================================
+# 3. ЗАСАГ ЗАХИРГААНЫ ХИЛИЙН ДАВХАРГУУД (АЙМАГ, СУМ, БАГ)
+# ==============================================================================
+
+# --- A. АЙМГИЙН ХИЛ (Заавал харагдахаар тохируулсан) ---
+try:
+  with open('aimag_boundaries.geojson', 'r', encoding='utf-8') as f:
+    aimag_data = json.load(f)
+
+  folium.GeoJson(
+      aimag_data,
+      name='1. Аймгийн хил',
+      style_function=lambda x: {
+          'fillColor': 'transparent',
+          'color': '#d9534f',  # Улаан хүрээ
+          'weight': 2.2,
+          'fillOpacity': 0.05,
+      },
+      highlight_function=lambda x: {
+          'fillColor': '#f0ad4e',
+          'color': '#d9534f',
+          'weight': 3,
+          'fillOpacity': 0.2,
+      },
+      tooltip=folium.GeoJsonTooltip(
+          fields=[
+              col
+              for col in [
+                  'prov_name',
+                  'aimag_name',
+                  'NAME_1',
+                  'Aimag_Name',
+                  'NAME',
+              ]
+              if col in list(aimag_data['features'][0]['properties'].keys())
+          ][:1]
+          or list(aimag_data['features'][0]['properties'].keys())[:1],
+          aliases=['Аймаг/Нийслэл:'],
+          sticky=True,
+      ),
+  ).add_to(m)
+  print('✅ Аймгийн хил амжилттай уншигдлаа.')
+except Exception as e:
+  print(f'⚠️ Аймгийн хил уншихад алдаа гарлаа: {e}')
+
+# --- B. СУМЫН ХИЛ (Layer Control-оос сонгож асаана) ---
+try:
+  with open('sum_boundaries.geojson', 'r', encoding='utf-8') as f:
+    sum_data = json.load(f)
+
+  folium.GeoJson(
+      sum_data,
+      name='2. Сумын хил',
+      style_function=lambda x: {
+          'fillColor': 'transparent',
+          'color': '#0275d8',  # Цэнхэр хүрээ
+          'weight': 1.2,
+          'fillOpacity': 0.05,
+      },
+      highlight_function=lambda x: {
+          'fillColor': '#5bc0de',
+          'color': '#0275d8',
+          'weight': 2,
+          'fillOpacity': 0.2,
+      },
+      tooltip=folium.GeoJsonTooltip(
+          fields=[
+              col
+              for col in ['soum_name', 'sum_name', 'NAME_2', 'Sum_Name']
+              if col in list(sum_data['features'][0]['properties'].keys())
+          ][:1]
+          or list(sum_data['features'][0]['properties'].keys())[:1],
+          aliases=['Сум/Дүүрэг:'],
+          sticky=True,
+      ),
+      show=False,  # Анх ороход унтраастай байх (Вэбийг хурдан ажиллуулна)
+  ).add_to(m)
+  print('✅ Сумын хил амжилттай уншигдлаа.')
+except Exception as e:
+  print(f'⚠️ Сумын хил уншихад алдаа гарлаа: {e}')
+
 
 # 3. КЛАСТЕР ГРУППҮҮД БОЛОН ИКОН ТОХИРУУЛГА
 nature_grp = MarkerCluster(name='🏞️ Natural Wonders').add_to(m)
@@ -543,7 +627,7 @@ js_styles = """
 <style>
     .lang-switcher-panel {
         position: absolute;
-        top: 300px;
+        top: 350px;
         right: 10px;
         z-index: 1000;
         background: rgba(255, 255, 255, 0.95);
