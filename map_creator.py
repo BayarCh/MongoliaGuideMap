@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import folium
 from folium.plugins import LocateControl, Search, MarkerCluster, MeasureControl
+
 # 1. Үндсэн зам болон тохиргоо
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -49,81 +50,80 @@ import folium
 
 # --- A. АЙМГИЙН ХИЛ (Заавал харагдахаар тохируулсан) ---
 try:
-  with open('aimag_boundaries.geojson', 'r', encoding='utf-8') as f:
-    aimag_data = json.load(f)
+    with open('aimag_boundaries.geojson', 'r', encoding='utf-8') as f:
+        aimag_data = json.load(f)
 
-  folium.GeoJson(
-      aimag_data,
-      name='1. Aimag Boundaries',
-      style_function=lambda x: {
-          'fillColor': 'transparent',
-          'color': '#d9534f',  # Улаан хүрээ
-          'weight': 2.2,
-          'fillOpacity': 0.05,
-      },
-      highlight_function=lambda x: {
-          'fillColor': '#f0ad4e',
-          'color': '#d9534f',
-          'weight': 3,
-          'fillOpacity': 0.2,
-      },
-      tooltip=folium.GeoJsonTooltip(
-          fields=[
-              col
-              for col in [
-                  'prov_name',
-                  'aimag_name',
-                  'NAME_1',
-                  'Aimag_Name',
-                  'NAME',
-              ]
-              if col in list(aimag_data['features'][0]['properties'].keys())
-          ][:1]
-          or list(aimag_data['features'][0]['properties'].keys())[:1],
-          aliases=['Аймаг/Нийслэл:'],
-          sticky=True,
-      ),
-  ).add_to(m)
-  print('✅ Аймгийн хил амжилттай уншигдлаа.')
+    folium.GeoJson(
+        aimag_data,
+        name='1. Aimag Boundaries',
+        style_function=lambda x: {
+            'fillColor': 'transparent',
+            'color': '#d9534f',  # Улаан хүрээ
+            'weight': 2.2,
+            'fillOpacity': 0.05,
+        },
+        highlight_function=lambda x: {
+            'fillColor': '#f0ad4e',
+            'color': '#d9534f',
+            'weight': 3,
+            'fillOpacity': 0.2,
+        },
+        tooltip=folium.GeoJsonTooltip(
+            fields=[
+                       col
+                       for col in [
+                    'prov_name',
+                    'aimag_name',
+                    'NAME_1',
+                    'Aimag_Name',
+                    'NAME',
+                ]
+                       if col in list(aimag_data['features'][0]['properties'].keys())
+                   ][:1]
+                   or list(aimag_data['features'][0]['properties'].keys())[:1],
+            aliases=['Аймаг/Нийслэл:'],
+            sticky=True,
+        ),
+    ).add_to(m)
+    print('✅ Аймгийн хил амжилттай уншигдлаа.')
 except Exception as e:
-  print(f'⚠️ Аймгийн хил уншихад алдаа гарлаа: {e}')
+    print(f'⚠️ Аймгийн хил уншихад алдаа гарлаа: {e}')
 
 # --- B. СУМЫН ХИЛ (Layer Control-оос сонгож асаана) ---
 try:
-  with open('sum_boundaries.geojson', 'r', encoding='utf-8') as f:
-    sum_data = json.load(f)
+    with open('sum_boundaries.geojson', 'r', encoding='utf-8') as f:
+        sum_data = json.load(f)
 
-  folium.GeoJson(
-      sum_data,
-      name='2. Soum Boundaries',
-      style_function=lambda x: {
-          'fillColor': 'transparent',
-          'color': '#0275d8',  # Цэнхэр хүрээ
-          'weight': 1.2,
-          'fillOpacity': 0.05,
-      },
-      highlight_function=lambda x: {
-          'fillColor': '#5bc0de',
-          'color': '#0275d8',
-          'weight': 2,
-          'fillOpacity': 0.2,
-      },
-      tooltip=folium.GeoJsonTooltip(
-          fields=[
-              col
-              for col in ['soum_name', 'sum_name', 'NAME_2', 'Sum_Name']
-              if col in list(sum_data['features'][0]['properties'].keys())
-          ][:1]
-          or list(sum_data['features'][0]['properties'].keys())[:1],
-          aliases=['Сум/Дүүрэг:'],
-          sticky=True,
-      ),
-      show=False,  # Анх ороход унтраастай байх (Вэбийг хурдан ажиллуулна)
-  ).add_to(m)
-  print('✅ Сумын хил амжилттай уншигдлаа.')
+    folium.GeoJson(
+        sum_data,
+        name='2. Soum Boundaries',
+        style_function=lambda x: {
+            'fillColor': 'transparent',
+            'color': '#0275d8',  # Цэнхэр хүрээ
+            'weight': 1.2,
+            'fillOpacity': 0.05,
+        },
+        highlight_function=lambda x: {
+            'fillColor': '#5bc0de',
+            'color': '#0275d8',
+            'weight': 2,
+            'fillOpacity': 0.2,
+        },
+        tooltip=folium.GeoJsonTooltip(
+            fields=[
+                       col
+                       for col in ['soum_name', 'sum_name', 'NAME_2', 'Sum_Name']
+                       if col in list(sum_data['features'][0]['properties'].keys())
+                   ][:1]
+                   or list(sum_data['features'][0]['properties'].keys())[:1],
+            aliases=['Сум/Дүүрэг:'],
+            sticky=True,
+        ),
+        show=False,  # Анх ороход унтраастай байх (Вэбийг хурдан ажиллуулна)
+    ).add_to(m)
+    print('✅ Сумын хил амжилттай уншигдлаа.')
 except Exception as e:
-  print(f'⚠️ Сумын хил уншихад алдаа гарлаа: {e}')
-
+    print(f'⚠️ Сумын хил уншихад алдаа гарлаа: {e}')
 
 # 3. КЛАСТЕР ГРУППҮҮД БОЛОН ИКОН ТОХИРУУЛГА
 nature_grp = MarkerCluster(name='🏞️ Natural Wonders').add_to(m)
@@ -153,14 +153,15 @@ groups_dict = {
 
 search_grp = folium.FeatureGroup(name="Search Layer", control=False).add_to(m)
 
-
 # 4. МАРКЕР НЭМЭХ ФУНКЦ (Дутуу байсан үндсэн логик)
 import pandas as pd
 import folium
 
+
 def add_markers_by_type(df, groups, search_layer, default_logo="https://via.placeholder.com/280x150?text=No+Image"):
     df.columns = df.columns.str.strip()
     df = df.fillna("")
+
     def build_popup_html(row):
         default_logo = "https://github.com/BayarCh/MongoliaGuideMap/blob/main/logo512.png?raw=true"
 
@@ -200,7 +201,8 @@ def add_markers_by_type(df, groups, search_layer, default_logo="https://via.plac
             phone_val = str(row.get('Phone', '')).strip()
             phone_display = phone_val if phone_val.lower() not in ['nan', 'none', '', '0'] else None
 
-            final_img = photo.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("dl=0", "raw=1") if "http" in photo.lower() else default_logo
+            final_img = photo.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("dl=0",
+                                                                                              "raw=1") if "http" in photo.lower() else default_logo
 
             target_grp, icon_name, icon_color = groups.get(p_val, (None, 'leaf', 'gray'))
             if target_grp is None:
@@ -683,18 +685,18 @@ var dictControlLayers = {
     "1. Aimag Boundaries": { "mn": "1. Аймгийн хил", "en": "1. Aimag Boundaries", "kr": "1. 아이막 경계", "jp": "1. アイマグ境界", "cn": "1. 省级行政边界", "ru": "1. Границы аймаков" },
     "2. Soum Boundaries": { "mn": "2. Сумын хил", "en": "2. Soum Boundaries", "kr": "2. 숨 경계", "jp": "2. スム境界", "cn": "2. 县级行政边界", "ru": "2. Границы сомонов" },
     "Street Map": { "mn": "🌐 Гудамжны зураг", "en": "🌐 Street Map", "kr": "🌐 거리 지도", "jp": "🌐 街路地図", "cn": "🌐 街道地图", "ru": "🌐 Карта улиц" },
-    "Satellite": { "mn": "🛰️ Хиймэл дагуул", "en": "🛰️ Satellite", "kr": "🛰️ 위성 지도", "jp": "🛰️ 卫星地图", "cn": "🛰️ 卫星地图", "ru": "🛰️ Спутник" },
+    "Satellite": { "mn": "🛰️ Хиймэл дагуул", "en": "🛰️ Satellite", "kr": "🛰️ 위성 지도", "jp": "🛰️ 衛星地図", "cn": "🛰️ 卫星地图", "ru": "🛰️ Спутник" },
     "Terrain Map": { "mn": "⛰️ Гадаргуун зураг", "en": "⛰️ Terrain Map", "kr": "⛰️ 지형 지도", "jp": "⛰️ 地形図", "cn": "⛰️ 地形图", "ru": "⛰️ Карта рельефа" },
     "OpenTopoMap": { "mn": "⛰️ OpenTopoMap", "en": "⛰️ Topo Map", "kr": "⛰️ 등고선 지도", "jp": "⛰️ 地形図", "cn": "⛰️ 地形图", "ru": "⛰️ Топокарта" },
-    "Natural Wonders": { "mn": "🏞️ Байгалийн үзэсгэлэн", "en": "Natural Wonders", "kr": "🏞️ 자연 경관", "jp": "🏞️ 自然の景观", "cn": "🏞️ 自然奇观", "ru": "🏞️ Чудеса природы" },
-    "Historical Sites": { "mn": "🏛️ Түүхэн дурсгал", "en": "Historical Sites", "kr": "🏛️ 역사 유적지", "jp": "🏛️ 歴史遺跡", "cn": "🏛️ 历史古迹", "ru": "🏛️ Исторические места" },
-    "Religious Sites": { "mn": "🕉️ Сүм хийд, шашин", "en": "Religious Sites", "kr": "🕉️ 종교 사원", "jp": "🕉️ 宗教寺院", "cn": "🕉️ 宗教圣地", "ru": "🕉️ Религиозные места" },
-    "Tourist Camps": { "mn": "⛺ Жуулчны бааз", "en": "Tourist Camps", "kr": "⛺ 여행자 캠프", "jp": "⛺ ツーリストキャンプ", "cn": "⛺ 旅游营地", "ru": "⛺ Турбазы" },
-    "Resorts": { "mn": "🏢 Амралтын газар", "en": "Resorts", "kr": "🏢 리조트", "jp": "🏢 リゾート", "cn": "🏢 度假村", "ru": "🏢 Курорты" },
-    "Sanatoriums": { "mn": "🏥 Сувилал", "en": "Sanatoriums", "kr": "🏥 요양원", "jp": "🏥 疗养所", "cn": "🏥 疗养院", "ru": "🏥 Санатории" },
-    "Children's Camps": { "mn": "🧒 Хүүхдийн зуслан", "en": "Children's Camps", "kr": "🧒 어린이 캠프", "jp": "🧒 児童キャンプ", "cn": "🧒 儿童营地", "ru": "🧒 Детские лагеря" },
-    "Roadside Service": { "mn": "🍽️ Зам дагуух үйлчилгээ", "en": "Roadside Service", "kr": "🍽️ 길거리 서비스", "jp": "🍽️ ロードサイド", "cn": "🍽️ 路边服务", "ru": "🍽️ Придорожный сервис" },
-    "Transport": { "mn": "✈️ Тээвэр, ложистик", "en": "Transport", "kr": "✈️ 교통 / 物流", "jp": "✈️ 交通 / 物流", "cn": "✈️ 交通 / 物流", "ru": "✈️ Транспорт" }
+    "Natural Wonders": { "mn": "🏞️ Байгалийн үзэсгэлэн", "en": "🏞️ Natural Wonders", "kr": "🏞️ 자연 경관", "jp": "🏞️ 自然の景观", "cn": "🏞️ 自然奇观", "ru": "🏞️ Чудеса природы" },
+    "Historical Sites": { "mn": "🏛️ Түүхэн дурсгал", "en": "🏛️ Historical Sites", "kr": "🏛️ 역사 유적지", "jp": "🏛️ 歴史遺跡", "cn": "🏛️ 历史古迹", "ru": "🏛️ Исторические места" },
+    "Religious Sites": { "mn": "🕉️ Сүм хийд, шашин", "en": "🕉️ Religious Sites", "kr": "🕉️ 종교 사원", "jp": "🕉️ 宗教寺院", "cn": "🕉️ 宗教圣地", "ru": "🕉️ Религиозные места" },
+    "Tourist Camps": { "mn": "⛺ Жуулчны бааз", "en": "⛺ Tourist Camps", "kr": "⛺ 여행자 캠프", "jp": "⛺ ツーリストキャンプ", "cn": "⛺ 旅游营地", "ru": "⛺ Турбазы" },
+    "Resorts": { "mn": "🏢 Амралтын газар", "en": "🏢 Resorts", "kr": "🏢 리조트", "jp": "🏢 リゾート", "cn": "🏢 度假村", "ru": "🏢 Курорты" },
+    "Sanatoriums": { "mn": "🏥 Сувилал", "en": "🏥 Sanatoriums", "kr": "🏥 요양원", "jp": "🏥 疗养所", "cn": "🏥 疗养院", "ru": "🏥 Санатории" },
+    "Children's Camps": { "mn": "🧒 Хүүхдийн зуслан", "en": "🧒 Children's Camps", "kr": "🧒 어린이 캠프", "jp": "🧒 児童キャンプ", "cn": "🧒 儿童营地", "ru": "🧒 Детские лагеря" },
+    "Roadside Service": { "mn": "🍽️ Зам дагуух үйлчилгээ", "en": "🍽️ Roadside Service", "kr": "🍽️ 길거리 서비스", "jp": "🍽️ ロードサイド", "cn": "🍽️ 路边服务", "ru": "🍽️ Придорожный сервис" },
+    "Transport": { "mn": "✈️ Тээвэр, ложистик", "en": "✈️ Transport", "kr": "✈️ 교통 / 物流", "jp": "✈️ 交通 / 物流", "cn": "✈️ 交通 / 物流", "ru": "✈️ Транспорт" }
 };
 
 // Глобал функц болгож зарлах
@@ -715,7 +717,7 @@ window.switchLanguage = function(lang) {
 function refreshSearchAndLabels() {
     document.querySelectorAll('.leaflet-control-layers label').forEach(function(label) {
         var rawText = label.getAttribute('data-raw-text');
-        
+
         // Хэрэв data-raw-text байхгүй бол шууд текстээс нь авах
         if (!rawText) {
             rawText = label.innerText.trim();
@@ -724,10 +726,10 @@ function refreshSearchAndLabels() {
 
         if (rawText) {
             var targetText = rawText;
-            
+
             // Текстийг цэвэрлэж харьцуулах түлхүүр үг гаргах
             var cleanKey = rawText.replace(/[^a-zA-Z0-9 .]/g, "").trim();
-            
+
             // dictControlLayers дотроос яг тохирох түлхүүрийг хайх
             var matchedKey = Object.keys(dictControlLayers).find(function(k) {
                 return k.toLowerCase() === cleanKey.toLowerCase() || cleanKey.toLowerCase().includes(k.toLowerCase());
@@ -932,3 +934,4 @@ m.get_root().html.add_child(folium.Element(multilang_code))
 output_html_path = os.path.join(current_dir, "index.html")
 m.save(output_html_path)
 print("Газрын зураг болон AI чатботыг амжилттай index.html файлд хадгаллаа!")
+
