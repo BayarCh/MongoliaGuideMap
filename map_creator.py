@@ -661,6 +661,7 @@ js_styles = """
     @media (max-width: 600px) {
         .lang-switcher-panel { top: auto; bottom: 300px; right: 8px; gap: 3px; max-width: 105px; }
         .lang-btn { font-size: 9px; padding: 2px 1px; }
+        .map-coordinates-box { display: none !important; }
     }
     .leaflet-control-search { margin-top: 10px !important; margin-left: 12px !important; }
 
