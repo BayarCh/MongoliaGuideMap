@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import pandas as pd
 import folium
@@ -662,9 +663,26 @@ js_styles = """
         .lang-btn { font-size: 9px; padding: 2px 1px; }
     }
     .leaflet-control-search { margin-top: 10px !important; margin-left: 12px !important; }
+
+    /* QR кодын дээр байрлах координатын самбар */
+    .map-coordinates-box {
+        position: absolute;
+        bottom: 200px;
+        left: 10px;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.8);
+        color: #ffffff;
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 4px;
+        font-family: monospace;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        pointer-events: none;
+    }
 </style>
 """
 
+# Хэл солих товчнуудын HTML бүтэц (Энэ дутуу байсан тул нэмэв)
 js_html = """
 <div class="lang-switcher-panel" id="langPanel">
     <button class="lang-btn active" data-lang="mn" onclick="window.switchLanguage('mn')">MN</button>
@@ -679,7 +697,6 @@ js_html = """
 js_script = """
 <script>
 var currentLang = 'mn';
-var mapObject = null;
 
 var dictControlLayers = {
     "1. Aimag Boundaries": { "mn": "1. Аймгийн хил", "en": "1. Aimag Boundaries", "kr": "1. 아이막 경계", "jp": "1. アイマグ境界", "cn": "1. 省级行政边界", "ru": "1. Границы аймаков" },
@@ -694,12 +711,11 @@ var dictControlLayers = {
     "Tourist Camps": { "mn": "⛺ Жуулчны бааз", "en": "⛺ Tourist Camps", "kr": "⛺ 여행자 캠프", "jp": "⛺ ツーリストキャンプ", "cn": "⛺ 旅游营地", "ru": "⛺ Турбазы" },
     "Resorts": { "mn": "🏢 Амралтын газар", "en": "🏢 Resorts", "kr": "🏢 리조트", "jp": "🏢 リゾート", "cn": "🏢 度假村", "ru": "🏢 Курорты" },
     "Sanatoriums": { "mn": "🏥 Сувилал", "en": "🏥 Sanatoriums", "kr": "🏥 요양원", "jp": "🏥 疗养所", "cn": "🏥 疗养院", "ru": "🏥 Санатории" },
-    "Childrens Camps": { "mn": "🧒 Хүүхдийн зуслан", "en": "🧒 Childrens Camps", "kr": "🧒 어린이 캠프", "jp": "🧒 児童キャンプ", "cn": "🧒 儿童营地", "ru": "🧒 Детские лагеря" },
+    "Children's Camps": { "mn": "🧒 Хүүхдийн зуслан", "en": "🧒 Children's Camps", "kr": "🧒 어린이 캠프", "jp": "🧒 児童キャンプ", "cn": "🧒 儿童营地", "ru": "🧒 Детские лагеря" },
     "Roadside Service": { "mn": "🍽️ Зам дагуух үйлчилгээ", "en": "🍽️ Roadside Service", "kr": "🍽️ 길거리 서비스", "jp": "🍽️ ロードサイド", "cn": "🍽️ 路边服务", "ru": "🍽️ Придорожный сервис" },
     "Transport": { "mn": "✈️ Тээвэр, ложистик", "en": "✈️ Transport", "kr": "✈️ 교통 / 物流", "jp": "✈️ 交通 / 物流", "cn": "✈️ 交通 / 物流", "ru": "✈️ Транспорт" }
 };
 
-// Глобал функц болгож зарлах
 window.switchLanguage = function(lang) {
     currentLang = lang;
     document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -714,33 +730,23 @@ window.switchLanguage = function(lang) {
     refreshSearchAndLabels();
     updatePopupLanguage();
 };
+
 function refreshSearchAndLabels() {
     document.querySelectorAll('.leaflet-control-layers label').forEach(function(label) {
-        var rawText = label.getAttribute('data-raw-text');
-
-        // Хэрэв data-raw-text байхгүй бол шууд текстээс нь авах
-        if (!rawText) {
-            rawText = label.innerText.trim();
-            if (rawText) { label.setAttribute('data-raw-text', rawText); }
+        var baseKey = label.getAttribute('data-base-key');
+        if (!baseKey) {
+            var txt = label.innerText.trim();
+            var foundKey = Object.keys(dictControlLayers).find(function(k) {
+                return txt.toLowerCase().includes(k.toLowerCase());
+            });
+            baseKey = foundKey ? foundKey : txt;
+            label.setAttribute('data-base-key', baseKey);
         }
 
-        if (rawText) {
-            var targetText = rawText;
-
-            // Текстийг цэвэрлэж харьцуулах түлхүүр үг гаргах
-            var cleanKey = rawText.replace(/[^a-zA-Z0-9 .]/g, "").trim();
-
-            // dictControlLayers дотроос яг тохирох түлхүүрийг хайх
-            var matchedKey = Object.keys(dictControlLayers).find(function(k) {
-                return k.toLowerCase() === cleanKey.toLowerCase() || cleanKey.toLowerCase().includes(k.toLowerCase());
-            });
-
-            if (matchedKey && dictControlLayers[matchedKey][currentLang]) { 
-                targetText = dictControlLayers[matchedKey][currentLang]; 
-            }
-
-            // Шошгоны текстийг шинэчлэх
+        if (baseKey && dictControlLayers[baseKey] && dictControlLayers[baseKey][currentLang]) {
+            var targetText = dictControlLayers[baseKey][currentLang];
             var textReplaced = false;
+
             for (var i = 0; i < label.childNodes.length; i++) {
                 var node = label.childNodes[i];
                 if (node.nodeType === 3 && node.textContent.trim().length > 0) {
@@ -750,12 +756,16 @@ function refreshSearchAndLabels() {
             }
             if (!textReplaced) {
                 label.querySelectorAll('span').forEach(function(span) {
-                    if (!span.querySelector('input')) { span.textContent = targetText.trim(); textReplaced = true; }
+                    if (!span.querySelector('input')) { 
+                        span.textContent = targetText.trim(); 
+                        textReplaced = true; 
+                    }
                 });
             }
         }
     });
 }
+
 function updatePopupLanguage() {
     document.querySelectorAll('.pop-lang').forEach(function(div) {
         if (div.classList.contains('lang-' + currentLang)) {
@@ -766,19 +776,42 @@ function updatePopupLanguage() {
     });
 }
 
-// Анх ачаалагдах үед шошгыг хадгалах
-setTimeout(function() {
-    var labels = document.querySelectorAll('.leaflet-control-layers label');
-    labels.forEach(function(label) {
-        if (!label.getAttribute('data-raw-text')) {
-            var txt = label.innerText.trim();
-            if (txt) { label.setAttribute('data-raw-text', txt); }
-        }
-    });
-}, 500);
+function initMapAndCoordinates() {
+    var mapInst = null;
+    for (var key in window) {
+        try {
+            if (window[key] && typeof window[key] === 'object' && window[key] instanceof L.Map) {
+                mapInst = window[key];
+                break;
+            }
+        } catch (e) {}
+    }
+
+    if (mapInst && !document.getElementById('coordBox')) {
+        var coordDiv = document.createElement('div');
+        coordDiv.id = 'coordBox';
+        coordDiv.className = 'map-coordinates-box';
+        coordDiv.innerHTML = '- , -';
+        document.body.appendChild(coordDiv);
+
+        mapInst.on('mousemove', function (e) {
+            var lat = e.latlng.lat.toFixed(5);
+            var lng = e.latlng.lng.toFixed(5);
+            coordDiv.innerHTML = '📍 ' + lat + ', ' + lng;
+        });
+    }
+
+    refreshSearchAndLabels();
+}
+
+window.addEventListener('load', function() {
+    setTimeout(initMapAndCoordinates, 1000);
+});
+setTimeout(initMapAndCoordinates, 1500);
 </script>
 """
 
+# Бүх хэсгүүдийг нэгтгэх
 ultimate_multilang_engine = js_styles + js_html + js_script
 m.get_root().html.add_child(folium.Element(ultimate_multilang_engine))
 
