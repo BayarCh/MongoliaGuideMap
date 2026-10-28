@@ -490,7 +490,7 @@ function shareOnMessenger() {
 
 <div id="qr-code-container" class="desktop-only" style="
     position: fixed; 
-    bottom: 80px; 
+    bottom: 90px; 
     left: 15px; 
     z-index: 999999 !important; 
     background: rgba(255, 255, 255, 0.9); 
@@ -566,7 +566,7 @@ function shareOnMessenger() {
 
     .leaflet-control-scale {
         position: fixed !important;
-        bottom: 43px !important; 
+        bottom: 50px !important; 
         left: 20px !important;   
         margin: 0 !important;
         z-index: 1000 !important;
@@ -666,22 +666,28 @@ js_styles = """
     .leaflet-control-search { margin-top: 10px !important; margin-left: 12px !important; }
 
     /* QR кодын дээр байрлах координатын самбар */
+
     .map-coordinates-box {
         position: absolute;
-        bottom: 200px;
-        left: 10px;
+        bottom: 15px;
+        left: 350px;
         z-index: 1000;
-        background: rgba(0, 0, 0, 0.8);
-        color: #ffffff;
-        padding: 4px 8px;
+        background: rgba(255, 255, 255, 0.95); /* Цагаан дэвсгэр */
+        color: #000000; /* Хар өнгийн бичиг */
+        padding: 5px 10px;
         font-size: 12px;
         border-radius: 4px;
         font-family: monospace;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        border: 1px solid #ccc;
         pointer-events: none;
     }
+
+    /* Гар утсан дээр (600px-ээс бага дэлгэц) координатын самбарыг харуулахгүй байх */
     @media (max-width: 600px) {
-        .map-coordinates-box { display: none !important; }
+        .map-coordinates-box {
+            display: none !important;
+        }
     }
 </style>
 """
@@ -801,7 +807,7 @@ function initMapAndCoordinates() {
         mapInst.on('mousemove', function (e) {
             var lat = e.latlng.lat.toFixed(5);
             var lng = e.latlng.lng.toFixed(5);
-            coordDiv.innerHTML = '📍 ' + lat + ', ' + lng;
+            coordDiv.innerHTML = lng + '°E ' + lat + '°N';
         });
     }
 
