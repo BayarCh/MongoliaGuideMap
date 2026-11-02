@@ -721,7 +721,7 @@ var dictControlLayers = {
     "Tourist Camps": { "mn": "⛺ Жуулчны бааз", "en": "⛺ Tourist Camps", "kr": "⛺ 여행자 캠프", "jp": "⛺ ツーリストキャンプ", "cn": "⛺ 旅游营地", "ru": "⛺ Турбазы" },
     "Resorts": { "mn": "🏢 Амралтын газар", "en": "🏢 Resorts", "kr": "🏢 리조트", "jp": "🏢 リゾート", "cn": "🏢 度假村", "ru": "🏢 Курорты" },
     "Sanatoriums": { "mn": "🏥 Сувилал", "en": "🏥 Sanatoriums", "kr": "🏥 요양원", "jp": "🏥 疗养所", "cn": "🏥 疗养院", "ru": "🏥 Санатории" },
-    "Children's Camps": { "mn": "🧒 Хүүхдийн зуслан", "en": "🧒 Children's Camps", "kr": "🧒 어린이 캠프", "jp": "🧒 児童キャンプ", "cn": "🧒 儿童营地", "ru": "🧒 Детские лагеря" },
+    "Childrens Camps": { "mn": "🧒 Хүүхдийн зуслан", "en": "🧒 Childrens Camps", "kr": "🧒 어린이 캠프", "jp": "🧒 児童キャンプ", "cn": "🧒 儿童营地", "ru": "🧒 Детские лагеря" },
     "Roadside Service": { "mn": "🍽️ Зам дагуух үйлчилгээ", "en": "🍽️ Roadside Service", "kr": "🍽️ 길거리 서비스", "jp": "🍽️ ロードサイド", "cn": "🍽️ 路边服务", "ru": "🍽️ Придорожный сервис" },
     "Transport": { "mn": "✈️ Тээвэр, ложистик", "en": "✈️ Transport", "kr": "✈️ 교통 / 物流", "jp": "✈️ 交通 / 物流", "cn": "✈️ 交通 / 物流", "ru": "✈️ Транспорт" }
 };
@@ -797,27 +797,32 @@ function initMapAndCoordinates() {
         } catch (e) {}
     }
 
-    if (mapInst && !document.getElementById('coordBox')) {
-        var coordDiv = document.createElement('div');
-        coordDiv.id = 'coordBox';
-        coordDiv.className = 'map-coordinates-box';
-        coordDiv.innerHTML = '- , -';
-        document.body.appendChild(coordDiv);
+    if (mapInst) {
+        if (!document.getElementById('coordBox')) {
+            var coordDiv = document.createElement('div');
+            coordDiv.id = 'coordBox';
+            coordDiv.className = 'map-coordinates-box';
+            coordDiv.innerHTML = '-, -';
+            document.body.appendChild(coordDiv);
 
-        mapInst.on('mousemove', function (e) {
-            var lat = e.latlng.lat.toFixed(5);
-            var lng = e.latlng.lng.toFixed(5);
-            coordDiv.innerHTML = lng + '°E ' + lat + '°N';
-        });
+            mapInst.on('mousemove', function (e) {
+                var lat = e.latlng.lat.toFixed(5);
+                var lng = e.latlng.lng.toFixed(5);
+                coordDiv.innerHTML = lng + '°E ' + lat + '°N';
+            });
+        }
+        refreshSearchAndLabels();
+        return true; // Амжилттай олдлоо
     }
-
-    refreshSearchAndLabels();
+    return false;
 }
 
-window.addEventListener('load', function() {
-    setTimeout(initMapAndCoordinates, 1000);
-});
-setTimeout(initMapAndCoordinates, 1500);
+// Карт бүрэн бэлэн болох хүртэл 300 миллисекунд тутамд шалгаж автоматаар нэмэх
+var checkExist = setInterval(function() {
+    if (initMapAndCoordinates()) {
+        clearInterval(checkExist); // Олдсон даруйд давталтыг зогсооно
+    }
+}, 300);
 </script>
 """
 
