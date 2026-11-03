@@ -667,21 +667,20 @@ js_styles = """
 
     /* QR кодын дээр байрлах координатын самбар */
 
-    .map-coordinates-box {
-        position: absolute;
-        bottom: 15px;
-        left: 350px;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.95); /* Цагаан дэвсгэр */
-        color: #000000; /* Хар өнгийн бичиг */
-        padding: 5px 10px;
-        font-size: 12px;
-        border-radius: 4px;
-        font-family: monospace;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-        border: 1px solid #ccc;
-        pointer-events: none;
-    }
+.map-coordinates-box {
+    position: absolute;
+    bottom: 15px;
+    left: 350px;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.85); /* Хар дэвсгэр */
+    color: #ffffff; /* Цагаан бичиг */
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    font-family: monospace;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    pointer-events: none;
+}   
 
     /* Гар утсан дээр (600px-ээс бага дэлгэц) координатын самбарыг харуулахгүй байх */
     @media (max-width: 600px) {
