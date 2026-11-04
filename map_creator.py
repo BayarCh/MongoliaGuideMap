@@ -56,7 +56,7 @@ try:
 
     folium.GeoJson(
         aimag_data,
-        name='1. Aimag Boundaries',
+        name='Aimag Boundaries',
         style_function=lambda x: {
             'fillColor': 'transparent',
             'color': '#d9534f',  # Улаан хүрээ
@@ -90,41 +90,6 @@ try:
 except Exception as e:
     print(f'⚠️ Аймгийн хил уншихад алдаа гарлаа: {e}')
 
-# --- B. СУМЫН ХИЛ (Layer Control-оос сонгож асаана) ---
-try:
-    with open('sum_boundaries.geojson', 'r', encoding='utf-8') as f:
-        sum_data = json.load(f)
-
-    folium.GeoJson(
-        sum_data,
-        name='2. Soum Boundaries',
-        style_function=lambda x: {
-            'fillColor': 'transparent',
-            'color': '#0275d8',  # Цэнхэр хүрээ
-            'weight': 1.2,
-            'fillOpacity': 0.05,
-        },
-        highlight_function=lambda x: {
-            'fillColor': '#5bc0de',
-            'color': '#0275d8',
-            'weight': 2,
-            'fillOpacity': 0.2,
-        },
-        tooltip=folium.GeoJsonTooltip(
-            fields=[
-                       col
-                       for col in ['soum_name', 'sum_name', 'NAME_2', 'Sum_Name']
-                       if col in list(sum_data['features'][0]['properties'].keys())
-                   ][:1]
-                   or list(sum_data['features'][0]['properties'].keys())[:1],
-            aliases=['Сум/Дүүрэг:'],
-            sticky=True,
-        ),
-        show=False,  # Анх ороход унтраастай байх (Вэбийг хурдан ажиллуулна)
-    ).add_to(m)
-    print('✅ Сумын хил амжилттай уншигдлаа.')
-except Exception as e:
-    print(f'⚠️ Сумын хил уншихад алдаа гарлаа: {e}')
 
 # 3. КЛАСТЕР ГРУППҮҮД БОЛОН ИКОН ТОХИРУУЛГА
 nature_grp = MarkerCluster(name='🏞️ Natural Wonders').add_to(m)
@@ -662,7 +627,7 @@ js_styles = """
         .lang-switcher-panel { top: auto; bottom: 300px; right: 8px; gap: 3px; max-width: 105px; }
         .lang-btn { font-size: 9px; padding: 2px 1px; }
     }
-    
+
     .leaflet-control-search { margin-top: 10px !important; margin-left: 12px !important; }
 
     /* QR кодын дээр байрлах координатын самбар */
@@ -708,8 +673,7 @@ js_script = """
 var currentLang = 'mn';
 
 var dictControlLayers = {
-    "1. Aimag Boundaries": { "mn": "1. Аймгийн хил", "en": "1. Aimag Boundaries", "kr": "1. 아이막 경계", "jp": "1. アイマグ境界", "cn": "1. 省级行政边界", "ru": "1. Границы аймаков" },
-    "2. Soum Boundaries": { "mn": "2. Сумын хил", "en": "2. Soum Boundaries", "kr": "2. 숨 경계", "jp": "2. スム境界", "cn": "2. 县级行政边界", "ru": "2. Границы сомонов" },
+    "Aimag Boundaries": { "mn": "Аймгийн хил", "en": "Aimag Boundaries", "kr":"아이막 경계", "jp":"アイマグ境界", "cn": "省级行政边界", "ru": "Границы аймаков" },
     "Street Map": { "mn": "🌐 Гудамжны зураг", "en": "🌐 Street Map", "kr": "🌐 거리 지도", "jp": "🌐 街路地図", "cn": "🌐 街道地图", "ru": "🌐 Карта улиц" },
     "Satellite": { "mn": "🛰️ Хиймэл дагуул", "en": "🛰️ Satellite", "kr": "🛰️ 위성 지도", "jp": "🛰️ 衛星地図", "cn": "🛰️ 卫星地图", "ru": "🛰️ Спутник" },
     "Terrain Map": { "mn": "⛰️ Гадаргуун зураг", "en": "⛰️ Terrain Map", "kr": "⛰️ 지형 지도", "jp": "⛰️ 地形図", "cn": "⛰️ 地形图", "ru": "⛰️ Карта рельефа" },
