@@ -168,7 +168,7 @@ def add_markers_by_type(df, groups, search_layer, default_logo="https://via.plac
             phone_display = phone_val if phone_val.lower() not in ['nan', 'none', '', '0'] else None
 
             final_img = photo.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("dl=0",
-                                                                                              "raw=1") if "http" in photo.lower() else default_logo
+                                                                                            "raw=1") if "http" in photo.lower() else default_logo
 
             target_grp, icon_name, icon_color = groups.get(p_val, (None, 'leaf', 'gray'))
             if target_grp is None:
@@ -893,12 +893,21 @@ async function sendWidgetMessage() {
     messagesDiv.appendChild(loadingDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-    try {
-        const response = await fetch('https://mongoliaguidemap-1.onrender.com/chat', {
+try {
+        // Локал болон Render серверийн хаягийг автоматаар ялгана
+        const API_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+            ? 'http://127.0.0.1:5000/chat'
+            : 'https://mongoliaguidemap-1.onrender.com/chat';
+
+        const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: message })
         });
+
+        if (!response.ok) {
+            throw new Error('Серверээс алдаа буцаалаа');
+        }
 
         if (loadingDiv) loadingDiv.remove();
 
@@ -945,4 +954,3 @@ m.get_root().html.add_child(folium.Element(multilang_code))
 output_html_path = os.path.join(current_dir, "index.html")
 m.save(output_html_path)
 print("Газрын зураг болон AI чатботыг амжилттай index.html файлд хадгаллаа!")
-
