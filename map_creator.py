@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 import os
 import pandas as pd
 import folium
 from folium.plugins import LocateControl, Search, MarkerCluster, MeasureControl
+
 # 1. Үндсэн зам болон тохиргоо
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -40,6 +42,54 @@ folium.TileLayer(tiles='https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', att
     m)
 folium.TileLayer(tiles='https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', attr='Google',
                  name='⛰️ Terrain Map').add_to(m)
+import json
+import folium
+
+# ==============================================================================
+# 3. ЗАСАГ ЗАХИРГААНЫ ХИЛИЙН ДАВХАРГУУД (АЙМАГ, СУМ, БАГ)
+# ==============================================================================
+
+# --- A. АЙМГИЙН ХИЛ (Заавал харагдахаар тохируулсан) ---
+try:
+    with open('aimag_boundaries.geojson', 'r', encoding='utf-8') as f:
+        aimag_data = json.load(f)
+
+    folium.GeoJson(
+        aimag_data,
+        name='Aimag Boundaries',
+        style_function=lambda x: {
+            'fillColor': 'transparent',
+            'color': '#d9534f',  # Улаан хүрээ
+            'weight': 2.2,
+            'fillOpacity': 0.05,
+        },
+        highlight_function=lambda x: {
+            'fillColor': '#f0ad4e',
+            'color': '#d9534f',
+            'weight': 3,
+            'fillOpacity': 0.2,
+        },
+        tooltip=folium.GeoJsonTooltip(
+            fields=[
+                       col
+                       for col in [
+                    'prov_name',
+                    'aimag_name',
+                    'NAME_1',
+                    'Aimag_Name',
+                    'NAME',
+                ]
+                       if col in list(aimag_data['features'][0]['properties'].keys())
+                   ][:1]
+                   or list(aimag_data['features'][0]['properties'].keys())[:1],
+            aliases=['Аймаг/Нийслэл:'],
+            sticky=True,
+        ),
+    ).add_to(m)
+    print('✅ Аймгийн хил амжилттай уншигдлаа.')
+except Exception as e:
+    print(f'⚠️ Аймгийн хил уншихад алдаа гарлаа: {e}')
+
 
 # 3. КЛАСТЕР ГРУППҮҮД БОЛОН ИКОН ТОХИРУУЛГА
 nature_grp = MarkerCluster(name='🏞️ Natural Wonders').add_to(m)
@@ -69,14 +119,15 @@ groups_dict = {
 
 search_grp = folium.FeatureGroup(name="Search Layer", control=False).add_to(m)
 
-
 # 4. МАРКЕР НЭМЭХ ФУНКЦ (Дутуу байсан үндсэн логик)
 import pandas as pd
 import folium
 
+
 def add_markers_by_type(df, groups, search_layer, default_logo="https://via.placeholder.com/280x150?text=No+Image"):
     df.columns = df.columns.str.strip()
     df = df.fillna("")
+
     def build_popup_html(row):
         default_logo = "https://github.com/BayarCh/MongoliaGuideMap/blob/main/logo512.png?raw=true"
 
@@ -116,7 +167,8 @@ def add_markers_by_type(df, groups, search_layer, default_logo="https://via.plac
             phone_val = str(row.get('Phone', '')).strip()
             phone_display = phone_val if phone_val.lower() not in ['nan', 'none', '', '0'] else None
 
-            final_img = photo.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("dl=0", "raw=1") if "http" in photo.lower() else default_logo
+            final_img = photo.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("dl=0",
+                                                                                            "raw=1") if "http" in photo.lower() else default_logo
 
             target_grp, icon_name, icon_color = groups.get(p_val, (None, 'leaf', 'gray'))
             if target_grp is None:
@@ -403,7 +455,7 @@ function shareOnMessenger() {
 
 <div id="qr-code-container" class="desktop-only" style="
     position: fixed; 
-    bottom: 80px; 
+    bottom: 90px; 
     left: 15px; 
     z-index: 999999 !important; 
     background: rgba(255, 255, 255, 0.9); 
@@ -479,7 +531,7 @@ function shareOnMessenger() {
 
     .leaflet-control-scale {
         position: fixed !important;
-        bottom: 43px !important; 
+        bottom: 50px !important; 
         left: 20px !important;   
         margin: 0 !important;
         z-index: 1000 !important;
@@ -543,7 +595,7 @@ js_styles = """
 <style>
     .lang-switcher-panel {
         position: absolute;
-        top: 300px;
+        top: 350px;
         right: 10px;
         z-index: 1000;
         background: rgba(255, 255, 255, 0.95);
@@ -575,95 +627,69 @@ js_styles = """
         .lang-switcher-panel { top: auto; bottom: 300px; right: 8px; gap: 3px; max-width: 105px; }
         .lang-btn { font-size: 9px; padding: 2px 1px; }
     }
+
     .leaflet-control-search { margin-top: 10px !important; margin-left: 12px !important; }
+
+    /* QR кодын дээр байрлах координатын самбар */
+
+.map-coordinates-box {
+    position: absolute;
+    bottom: 15px;
+    left: 350px;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.85); /* Хар дэвсгэр */
+    color: #ffffff; /* Цагаан бичиг */
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    font-family: monospace;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    pointer-events: none;
+}   
+
+    /* Гар утсан дээр (600px-ээс бага дэлгэц) координатын самбарыг харуулахгүй байх */
+    @media (max-width: 600px) {
+        .map-coordinates-box {
+            display: none !important;
+        }
+    }
 </style>
 """
 
+# Хэл солих товчнуудын HTML бүтэц (Энэ дутуу байсан тул нэмэв)
 js_html = """
 <div class="lang-switcher-panel" id="langPanel">
-    <button class="lang-btn active" data-lang="mn" onclick="switchLanguage('mn')">MN</button>
-    <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
-    <button class="lang-btn" data-lang="kr" onclick="switchLanguage('kr')">KR</button>
-    <button class="lang-btn" data-lang="jp" onclick="switchLanguage('jp')">JP</button>
-    <button class="lang-btn" data-lang="cn" onclick="switchLanguage('cn')">CN</button>
-    <button class="lang-btn" data-lang="ru" onclick="switchLanguage('ru')">RU</button>
+    <button class="lang-btn active" data-lang="mn" onclick="window.switchLanguage('mn')">MN</button>
+    <button class="lang-btn" data-lang="en" onclick="window.switchLanguage('en')">EN</button>
+    <button class="lang-btn" data-lang="kr" onclick="window.switchLanguage('kr')">KR</button>
+    <button class="lang-btn" data-lang="jp" onclick="window.switchLanguage('jp')">JP</button>
+    <button class="lang-btn" data-lang="cn" onclick="window.switchLanguage('cn')">CN</button>
+    <button class="lang-btn" data-lang="ru" onclick="window.switchLanguage('ru')">RU</button>
 </div>
 """
 
 js_script = """
 <script>
 var currentLang = 'mn';
-var searchControl = null;
-var mapObject = null;
-var globalClusterGroups = [];
 
 var dictControlLayers = {
+    "Aimag Boundaries": { "mn": "Аймгийн хил", "en": "Aimag Boundaries", "kr":"아이막 경계", "jp":"アイマグ境界", "cn": "省级行政边界", "ru": "Границы аймаков" },
     "Street Map": { "mn": "🌐 Гудамжны зураг", "en": "🌐 Street Map", "kr": "🌐 거리 지도", "jp": "🌐 街路地図", "cn": "🌐 街道地图", "ru": "🌐 Карта улиц" },
-    "Satellite": { "mn": "🛰️ Хиймэл дагуул", "en": "🛰️ Satellite", "kr": "🛰️ 위성 지도", "jp": "🛰️ 卫星地图", "cn": "🛰️ 卫星地图", "ru": "🛰️ Спутник" },
+    "Satellite": { "mn": "🛰️ Хиймэл дагуул", "en": "🛰️ Satellite", "kr": "🛰️ 위성 지도", "jp": "🛰️ 衛星地図", "cn": "🛰️ 卫星地图", "ru": "🛰️ Спутник" },
     "Terrain Map": { "mn": "⛰️ Гадаргуун зураг", "en": "⛰️ Terrain Map", "kr": "⛰️ 지형 지도", "jp": "⛰️ 地形図", "cn": "⛰️ 地形图", "ru": "⛰️ Карта рельефа" },
     "OpenTopoMap": { "mn": "⛰️ OpenTopoMap", "en": "⛰️ Topo Map", "kr": "⛰️ 등고선 지도", "jp": "⛰️ 地形図", "cn": "⛰️ 地形图", "ru": "⛰️ Топокарта" },
-
-    "Natural Wonders": { "mn": "🏞️ Байгалийн үзэсгэлэн", "en": "Natural Wonders", "kr": "🏞️ 자연 경관", "jp": "🏞️ 自然の景观", "cn": "🏞️ 自然奇观", "ru": "🏞️ Чудеса природы" },
-    "Historical Sites": { "mn": "🏛️ Түүхэн дурсгал", "en": "Historical Sites", "kr": "🏛️ 역사 유적지", "jp": "🏛️ 歴史遺跡", "cn": "🏛️ 历史古迹", "ru": "🏛️ Исторические места" },
-    "Religious Sites": { "mn": "🕉️ Сүм хийд, шашин", "en": "Religious Sites", "kr": "🕉️ 종교 사원", "jp": "🕉️ 宗教寺院", "cn": "🕉️ 宗教圣地", "ru": "🕉️ Религиозные места" },
-    "Tourist Camps": { "mn": "⛺ Жуулчны бааз", "en": "Tourist Camps", "kr": "⛺ 여행자 캠프", "jp": "⛺ ツーリストキャンプ", "cn": "⛺ 旅游营地", "ru": "⛺ Турбазы" },
-    "Resorts": { "mn": "🏢 Амралтын газар", "en": "Resorts", "kr": "🏢 리조트", "jp": "🏢 リゾート", "cn": "🏢 度假村", "ru": "🏢 Курорты" },
-    "Sanatoriums": { "mn": "🏥 Сувилал", "en": "Sanatoriums", "kr": "🏥 요양원", "jp": "🏥 疗养所", "cn": "🏥 疗养院", "ru": "🏥 Санатории" },
-    "Children's Camps": { "mn": "🧒 Хүүхдийн зуслан", "en": "Children's Camps", "kr": "🧒 어린이 캠프", "jp": "🧒 児童キャンプ", "cn": "🧒 儿童营地", "ru": "🧒 Детские лагеря" },
-    "Roadside Service": { "mn": "🍽️ Зам дагуух үйлчилгээ", "en": "Roadside Service", "kr": "🍽️ 길거리 서비스", "jp": "🍽️ ロードサイド", "cn": "🍽️ 路边服务", "ru": "🍽️ Придорожный сервис" },
-    "Transport": { "mn": "✈️ Тээвэр, ложистик", "en": "Transport", "kr": "✈️ 교통 / 物流", "jp": "✈️ 交通 / 物流", "cn": "✈️ 交通 / 物流", "ru": "✈️ Транспорт" }
+    "Natural Wonders": { "mn": "🏞️ Байгалийн үзэсгэлэн", "en": "🏞️ Natural Wonders", "kr": "🏞️ 자연 경관", "jp": "🏞️ 自然の景观", "cn": "🏞️ 自然奇观", "ru": "🏞️ Чудеса природы" },
+    "Historical Sites": { "mn": "🏛️ Түүхэн дурсгал", "en": "🏛️ Historical Sites", "kr": "🏛️ 역사 유적지", "jp": "🏛️ 歴史遺跡", "cn": "🏛️ 历史古迹", "ru": "🏛️ Исторические места" },
+    "Religious Sites": { "mn": "🕉️ Сүм хийд, шашин", "en": "🕉️ Religious Sites", "kr": "🕉️ 종교 사원", "jp": "🕉️ 宗教寺院", "cn": "🕉️ 宗教圣地", "ru": "🕉️ Религиозные места" },
+    "Tourist Camps": { "mn": "⛺ Жуулчны бааз", "en": "⛺ Tourist Camps", "kr": "⛺ 여행자 캠프", "jp": "⛺ ツーリストキャンプ", "cn": "⛺ 旅游营地", "ru": "⛺ Турбазы" },
+    "Resorts": { "mn": "🏢 Амралтын газар", "en": "🏢 Resorts", "kr": "🏢 리조트", "jp": "🏢 リゾート", "cn": "🏢 度假村", "ru": "🏢 Курорты" },
+    "Sanatoriums": { "mn": "🏥 Сувилал", "en": "🏥 Sanatoriums", "kr": "🏥 요양원", "jp": "🏥 疗养所", "cn": "🏥 疗养院", "ru": "🏥 Санатории" },
+    "Childrens Camps": { "mn": "🧒 Хүүхдийн зуслан", "en": "🧒 Childrens Camps", "kr": "🧒 어린이 캠프", "jp": "🧒 児童キャンプ", "cn": "🧒 儿童营地", "ru": "🧒 Детские лагеря" },
+    "Roadside Service": { "mn": "🍽️ Зам дагуух үйлчилгээ", "en": "🍽️ Roadside Service", "kr": "🍽️ 길거리 서비스", "jp": "🍽️ ロードサイド", "cn": "🍽️ 路边服务", "ru": "🍽️ Придорожный сервис" },
+    "Transport": { "mn": "✈️ Тээвэр, ложистик", "en": "✈️ Transport", "kr": "✈️ 교통 / 物流", "jp": "✈️ 交通 / 物流", "cn": "✈️ 交通 / 物流", "ru": "✈️ Транспорт" }
 };
 
-document.addEventListener("DOMContentLoaded", function() {
-    function initMultilangEngine() {
-        for (var key in window) {
-            if (key.startsWith('map_') && window[key] instanceof L.Map) { mapObject = window[key]; }
-            if (window[key] instanceof L.MarkerClusterGroup) { globalClusterGroups.push(window[key]); }
-        }
-
-        if (mapObject) {
-            mapObject.eachLayer(function(layer) {
-                if (layer instanceof L.Control.Search && layer !== searchControl) {
-                    mapObject.removeControl(layer);
-                }
-            });
-
-            var badControls = document.querySelectorAll('.leaflet-control-search');
-            if (badControls.length > 1) {
-                for (var i = 1; i < badControls.length; i++) { badControls[i].remove(); }
-            }
-
-            mapObject.on('popupopen', function(e) { updatePopupLanguage(); });
-            saveOriginalLabels();
-        } else {
-            setTimeout(initMultilangEngine, 300);
-        }
-    }
-    initMultilangEngine();
-});
-
-function saveOriginalLabels() {
-    var labels = document.querySelectorAll('.leaflet-control-layers label');
-    if (labels.length > 0) {
-        labels.forEach(function(label) {
-            if (!label.getAttribute('data-raw-text')) {
-                var txt = "";
-                label.childNodes.forEach(function(node) {
-                    if (node.nodeType === 3) txt += node.textContent;
-                    else if (node.tagName === 'SPAN' && !node.querySelector('input')) txt += node.textContent;
-                });
-                if (!txt.trim() || !txt.includes('|')) { txt = label.innerText || ""; }
-                txt = txt.trim();
-                if (txt) { label.setAttribute('data-raw-text', txt); }
-            }
-        });
-        refreshSearchAndLabels();
-    } else {
-        setTimeout(saveOriginalLabels, 150);
-    }
-}
-
-function switchLanguage(lang) {
+window.switchLanguage = function(lang) {
     currentLang = lang;
     document.querySelectorAll('.lang-btn').forEach(btn => {
         if(btn.getAttribute('data-lang') === lang) { btn.classList.add('active'); } 
@@ -676,36 +702,24 @@ function switchLanguage(lang) {
 
     refreshSearchAndLabels();
     updatePopupLanguage();
-}
+};
 
 function refreshSearchAndLabels() {
     document.querySelectorAll('.leaflet-control-layers label').forEach(function(label) {
-        var rawText = label.getAttribute('data-raw-text');
-        if (rawText) {
-            var targetText = rawText;
-            if (rawText.includes('|')) {
-                var parts = rawText.split('|');
-                var mnPart = parts[0].trim();
-                var enPart = parts[1].trim();
-                var cleanEnKey = enPart.replace(/[^a-zA-Z ]/g, "").trim(); 
+        var baseKey = label.getAttribute('data-base-key');
+        if (!baseKey) {
+            var txt = label.innerText.trim();
+            var foundKey = Object.keys(dictControlLayers).find(function(k) {
+                return txt.toLowerCase().includes(k.toLowerCase());
+            });
+            baseKey = foundKey ? foundKey : txt;
+            label.setAttribute('data-base-key', baseKey);
+        }
 
-                if (currentLang === 'mn') {
-                    targetText = mnPart;
-                } else {
-                    var matchedKey = Object.keys(dictControlLayers).find(function(k) {
-                        return k.replace(/[^a-zA-Z ]/g, "").toLowerCase() === cleanEnKey.toLowerCase();
-                    });
-                    targetText = (matchedKey && dictControlLayers[matchedKey][currentLang]) ? dictControlLayers[matchedKey][currentLang] : enPart;
-                }
-            } else {
-                var cleanKey = rawText.replace(/[^a-zA-Z ]/g, "").trim();
-                var matchedKey = Object.keys(dictControlLayers).find(function(k) {
-                    return k.replace(/[^a-zA-Z ]/g, "").toLowerCase() === cleanKey.toLowerCase();
-                });
-                if (matchedKey && dictControlLayers[matchedKey][currentLang]) { targetText = dictControlLayers[matchedKey][currentLang]; }
-            }
-
+        if (baseKey && dictControlLayers[baseKey] && dictControlLayers[baseKey][currentLang]) {
+            var targetText = dictControlLayers[baseKey][currentLang];
             var textReplaced = false;
+
             for (var i = 0; i < label.childNodes.length; i++) {
                 var node = label.childNodes[i];
                 if (node.nodeType === 3 && node.textContent.trim().length > 0) {
@@ -715,7 +729,10 @@ function refreshSearchAndLabels() {
             }
             if (!textReplaced) {
                 label.querySelectorAll('span').forEach(function(span) {
-                    if (!span.querySelector('input')) { span.textContent = targetText.trim(); textReplaced = true; }
+                    if (!span.querySelector('input')) { 
+                        span.textContent = targetText.trim(); 
+                        textReplaced = true; 
+                    }
                 });
             }
         }
@@ -731,9 +748,48 @@ function updatePopupLanguage() {
         }
     });
 }
+
+function initMapAndCoordinates() {
+    var mapInst = null;
+    for (var key in window) {
+        try {
+            if (window[key] && typeof window[key] === 'object' && window[key] instanceof L.Map) {
+                mapInst = window[key];
+                break;
+            }
+        } catch (e) {}
+    }
+
+    if (mapInst) {
+        if (!document.getElementById('coordBox')) {
+            var coordDiv = document.createElement('div');
+            coordDiv.id = 'coordBox';
+            coordDiv.className = 'map-coordinates-box';
+            coordDiv.innerHTML = '-, -';
+            document.body.appendChild(coordDiv);
+
+            mapInst.on('mousemove', function (e) {
+                var lat = e.latlng.lat.toFixed(5);
+                var lng = e.latlng.lng.toFixed(5);
+                coordDiv.innerHTML = lng + '°E ' + lat + '°N';
+            });
+        }
+        refreshSearchAndLabels();
+        return true; // Амжилттай олдлоо
+    }
+    return false;
+}
+
+// Карт бүрэн бэлэн болох хүртэл 300 миллисекунд тутамд шалгаж автоматаар нэмэх
+var checkExist = setInterval(function() {
+    if (initMapAndCoordinates()) {
+        clearInterval(checkExist); // Олдсон даруйд давталтыг зогсооно
+    }
+}, 300);
 </script>
 """
 
+# Бүх хэсгүүдийг нэгтгэх
 ultimate_multilang_engine = js_styles + js_html + js_script
 m.get_root().html.add_child(folium.Element(ultimate_multilang_engine))
 
@@ -837,12 +893,21 @@ async function sendWidgetMessage() {
     messagesDiv.appendChild(loadingDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-    try {
-        const response = await fetch('https://mongoliaguidemap-1.onrender.com/chat', {
+try {
+        // Локал болон Render серверийн хаягийг автоматаар ялгана
+        const API_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+            ? 'http://127.0.0.1:5000/chat'
+            : 'https://mongoliaguidemap-1.onrender.com/chat';
+
+        const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: message })
         });
+
+        if (!response.ok) {
+            throw new Error('Серверээс алдаа буцаалаа');
+        }
 
         if (loadingDiv) loadingDiv.remove();
 
@@ -866,6 +931,24 @@ async function sendWidgetMessage() {
 """
 
 m.get_root().html.add_child(folium.Element(ai_chat_widget_html))
+import folium
+from jinja2 import Template
+
+# 10. ОЛОН ХЭЛНИЙ СКРИПТИЙГ ГАЗРЫН ЗУРГИЙН ТОЛГОЙД ОРУУЛАХ
+multilang_code = f"""
+<style>
+{js_styles}
+</style>
+
+{js_html}
+
+<script>
+{js_script}
+</script>
+"""
+
+# Шууд газрын зураг рүү HTML элемент болгон нэмэх
+m.get_root().html.add_child(folium.Element(multilang_code))
 
 # 12. ГАЗРЫН ЗУРГИЙГ INDEX.HTML ФАЙЛД ХАДГАЛАХ
 output_html_path = os.path.join(current_dir, "index.html")
